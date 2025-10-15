@@ -7,9 +7,11 @@ const RoleBasedRoute = ({ allowedRoles }) => {
 
   if (!hasRole(allowedRoles)) {
     // Redirect based on user's actual role
-    if (user?.role === 'user') {
+    const userRoles = Array.isArray(user?.role) ? user.role : [user?.role];
+
+    if (userRoles.includes('user')) {
       return <Navigate to="/user/dashboard" />;
-    } else if (user?.role === 'admin' || user?.role === 'superadmin') {
+    } else if (userRoles.includes('admin') || userRoles.includes('superadmin')) {
       return <Navigate to="/dashboard" />;
     }
     return <Navigate to="/login" />;

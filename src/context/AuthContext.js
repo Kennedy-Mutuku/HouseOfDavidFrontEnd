@@ -32,9 +32,19 @@ export const AuthProvider = ({ children }) => {
     setLoading(false);
   }, []);
 
-  const login = async (email, password) => {
+  const login = async (identifier, password, loginType = 'user') => {
     try {
-      const response = await axios.post('/auth/login', { email, password });
+      let loginData;
+
+      if (loginType === 'admin') {
+        // Admin login with username and password
+        loginData = { username: identifier, password };
+      } else {
+        // User login with email and idNumber
+        loginData = { email: identifier, idNumber: password };
+      }
+
+      const response = await axios.post('/auth/login', loginData);
 
       if (response.data.success) {
         const { token, ...userData } = response.data.data;
@@ -74,10 +84,12 @@ export const AuthProvider = ({ children }) => {
 
   const hasRole = (roles) => {
     if (!user) return false;
+    const userRoles = Array.isArray(user.role) ? user.role : [user.role];
+
     if (Array.isArray(roles)) {
-      return roles.includes(user.role);
+      return roles.some(role => userRoles.includes(role));
     }
-    return user.role === roles;
+    return userRoles.includes(roles);
   };
 
   const value = {
@@ -92,7 +104,7 @@ export const AuthProvider = ({ children }) => {
 
   return (
     <AuthContext.Provider value={value}>
-      {!loading && children}
+      {children}
     </AuthContext.Provider>
   );
 };
