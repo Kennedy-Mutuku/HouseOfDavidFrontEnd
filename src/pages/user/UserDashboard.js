@@ -1,6 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../../context/AuthContext';
-import { Link } from 'react-router-dom';
 import {
   FiChevronDown,
   FiChevronUp,
@@ -9,13 +7,17 @@ import {
   FiChevronLeft,
   FiChevronRight
 } from 'react-icons/fi';
-import axios from 'axios';
+import { toast } from 'react-toastify';
+import GivingModal from '../../components/GivingModal';
 
 const UserDashboard = () => {
-  const { user } = useAuth();
   const [expandedSections, setExpandedSections] = useState({});
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [givingModal, setGivingModal] = useState({
+    isOpen: false,
+    type: ''
+  });
 
   const carouselSlides = [
     {
@@ -50,7 +52,7 @@ const UserDashboard = () => {
       id: 'giving',
       title: 'RECORD MY GIVING',
       description: 'Track your tithes, offerings, and contributions',
-      items: ['Tithe', 'Offering', 'Special Giving', 'Building Fund', 'Missions Support']
+      items: ['Tithe', 'Offering', 'Special Giving']
     },
     {
       id: 'attendance',
@@ -109,6 +111,20 @@ const UserDashboard = () => {
 
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleGivingClick = (givingType) => {
+    setGivingModal({
+      isOpen: true,
+      type: givingType
+    });
+  };
+
+  const closeGivingModal = () => {
+    setGivingModal({
+      isOpen: false,
+      type: ''
+    });
   };
 
   return (
@@ -253,7 +269,10 @@ const UserDashboard = () => {
                       {section.items.map((item, index) => (
                         <li
                           key={index}
-                          className="flex items-start space-x-3 text-orange-900 text-sm md:text-base py-2.5 px-4 bg-white rounded-lg hover:bg-orange-100 transition-colors border border-orange-300/50 shadow-sm"
+                          onClick={() => section.id === 'giving' && handleGivingClick(item)}
+                          className={`flex items-start space-x-3 text-orange-900 text-sm md:text-base py-2.5 px-4 bg-white rounded-lg hover:bg-orange-100 transition-colors border border-orange-300/50 shadow-sm ${
+                            section.id === 'giving' ? 'cursor-pointer hover:shadow-md' : ''
+                          }`}
                         >
                           <span className="text-orange-500 font-bold mt-0.5">•</span>
                           <span className="flex-1">{item}</span>
@@ -273,20 +292,6 @@ const UserDashboard = () => {
               Connect with our ministry teams and find your place in our community.
               Your journey of faith and service starts here.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link
-                to="/user/feedback"
-                className="bg-teal-600 hover:bg-teal-700 text-white font-semibold px-8 py-3 rounded-xl transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
-              >
-                Contact Ministry Leader
-              </Link>
-              <Link
-                to="/user/announcements"
-                className="bg-orange-500 hover:bg-orange-600 text-white font-semibold px-8 py-3 rounded-xl transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
-              >
-                View Announcements
-              </Link>
-            </div>
           </div>
         </div>
       </div>
@@ -312,6 +317,16 @@ const UserDashboard = () => {
           </button>
         )}
       </div>
+
+      {/* Giving Modal */}
+      <GivingModal
+        isOpen={givingModal.isOpen}
+        onClose={closeGivingModal}
+        givingType={givingModal.type}
+        onSuccess={() => {
+          toast.success('Thank you for your contribution!');
+        }}
+      />
     </div>
   );
 };
