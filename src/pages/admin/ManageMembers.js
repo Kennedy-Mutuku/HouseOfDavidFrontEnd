@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useMemberContext } from '../../context/MemberContext';
 import { FiSearch, FiRefreshCw, FiUser, FiMail, FiPhone } from 'react-icons/fi';
+import UniformHeader from '../../components/UniformHeader';
 
 const ManageMembers = () => {
   const { members, updateMember } = useMemberContext();
@@ -14,6 +15,7 @@ const ManageMembers = () => {
     return (
       member.fullName?.toLowerCase().includes(query) ||
       member.email?.toLowerCase().includes(query) ||
+      member.phone?.toLowerCase().includes(query) ||
       member.phoneNo?.toLowerCase().includes(query) ||
       member.membershipNumber?.toLowerCase().includes(query) ||
       member.idNo?.toLowerCase().includes(query)
@@ -39,24 +41,12 @@ const ManageMembers = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-purple-700">
-      <div className="max-w-6xl mx-auto px-4 py-8">
-        {/* Header Card */}
-        <div className="bg-white rounded-3xl shadow-2xl overflow-hidden mb-6">
-          {/* Logo Section */}
-          <div className="bg-gradient-to-r from-purple-800 via-purple-700 to-purple-900 p-6 flex justify-center">
-            <div className="relative">
-              <div className="absolute inset-0 bg-gold-400 rounded-full blur-lg opacity-60"></div>
-              <div className="relative h-20 w-20 rounded-full border-4 border-gold-400 shadow-2xl ring-2 ring-white/30 overflow-hidden bg-white flex items-center justify-center">
-                <img
-                  src="/images/logo.jpg"
-                  alt="House of David Logo"
-                  className="w-full h-full object-contain p-2"
-                />
-              </div>
-            </div>
-          </div>
+      {/* Uniform Header */}
+      <UniformHeader />
 
-          {/* Title and Search */}
+      <div className="max-w-6xl mx-auto px-4 py-8">
+        {/* Search and Controls Card */}
+        <div className="bg-white rounded-3xl shadow-2xl overflow-hidden mb-6">
           <div className="p-6">
             <h1 className="text-3xl font-bold text-gray-800 text-center mb-6">
               User Management
@@ -142,7 +132,22 @@ const ManageMembers = () => {
                     <FiPhone className="w-5 h-5 text-gray-500 mt-1 flex-shrink-0" />
                     <div>
                       <p className="text-sm text-gray-600 font-semibold">Phone:</p>
-                      <p className="text-gray-900 font-medium">{member.phoneNo}</p>
+                      <p className="text-gray-900 font-medium">{member.phone || member.phoneNo || 'N/A'}</p>
+                    </div>
+                  </div>
+
+                  {/* ID Number */}
+                  <div className="flex items-start gap-3 bg-blue-50 p-3 rounded-lg border border-blue-200">
+                    <div className="w-full">
+                      <p className="text-sm text-gray-600 font-semibold mb-1">Login Credentials:</p>
+                      <div className="space-y-1">
+                        <p className="text-gray-900 font-medium">
+                          <span className="text-gray-600 text-sm">Username (Email):</span> <span className="text-blue-600">{member.email}</span>
+                        </p>
+                        <p className="text-gray-900 font-medium">
+                          <span className="text-gray-600 text-sm">Password (ID No):</span> <span className="text-green-700 font-bold">{member.idNo || member.idNumber || member.id_no || 'Not set - Please re-add member'}</span>
+                        </p>
+                      </div>
                     </div>
                   </div>
 
@@ -151,19 +156,30 @@ const ManageMembers = () => {
                     {/* Membership Number */}
                     <div>
                       <p className="text-sm text-gray-600 font-semibold">REG:</p>
-                      <p className="text-gray-900 font-medium">{member.membershipNumber}</p>
+                      <p className="text-gray-900 font-medium">{member.membershipNumber || 'Not assigned'}</p>
+                    </div>
+
+                    {/* ID Number */}
+                    <div>
+                      <p className="text-sm text-gray-600 font-semibold">ID Number:</p>
+                      <p className="text-gray-900 font-medium">{member.idNo || member.idNumber || member.id_no || 'Not available'}</p>
                     </div>
 
                     {/* Date of Birth */}
                     <div>
                       <p className="text-sm text-gray-600 font-semibold">Date of Birth:</p>
-                      <p className="text-gray-900 font-medium">{member.dateOfBirth}</p>
+                      <p className="text-gray-900 font-medium">
+                        {member.dateOfBirth ? new Date(member.dateOfBirth).toLocaleDateString() : 'N/A'}
+                      </p>
                     </div>
 
                     {/* Date Joined */}
                     <div>
                       <p className="text-sm text-gray-600 font-semibold">Date Joined:</p>
-                      <p className="text-gray-900 font-medium">{member.dateJoined}</p>
+                      <p className="text-gray-900 font-medium">
+                        {member.membershipDate ? new Date(member.membershipDate).toLocaleDateString() :
+                         member.dateJoined ? new Date(member.dateJoined).toLocaleDateString() : 'N/A'}
+                      </p>
                     </div>
 
                     {/* People Group */}

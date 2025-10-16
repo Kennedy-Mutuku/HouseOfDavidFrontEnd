@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useMemberContext } from '../../context/MemberContext';
+import { useAuth } from '../../context/AuthContext';
 import axios from 'axios';
 import { toast } from 'react-toastify';
+import UniformHeader from '../../components/UniformHeader';
 
 const SuperAdminDashboard = () => {
   const { members } = useMemberContext();
+  const { isAuthenticated, user } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
   const [givingRecords, setGivingRecords] = useState([]);
   const [givingStats, setGivingStats] = useState({
@@ -32,6 +35,14 @@ const SuperAdminDashboard = () => {
   useEffect(() => {
     const fetchGivingRecords = async () => {
       try {
+        // Check if we have a token
+        const token = localStorage.getItem('token');
+        if (!token) {
+          console.log('No authentication token found');
+          setLoadingGiving(false);
+          return;
+        }
+
         const response = await axios.get('/donations');
         if (response.data.success) {
           const donations = response.data.data;
@@ -59,7 +70,13 @@ const SuperAdminDashboard = () => {
         }
       } catch (error) {
         console.error('Error fetching giving records:', error);
-        toast.error('Failed to load giving records');
+        if (error.response?.status === 401) {
+          console.log('Unauthorized - Please log in');
+          // Don't show error toast for 401 - just silently fail
+        } else {
+          const errorMsg = error.response?.data?.message || 'Failed to load giving records';
+          toast.error(errorMsg);
+        }
       } finally {
         setLoadingGiving(false);
       }
@@ -84,26 +101,16 @@ const SuperAdminDashboard = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-gradient-to-r from-purple-800 via-purple-700 to-purple-900 shadow-lg">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-white">Super Admin Dashboard</h1>
-              <p className="text-cyan-300 text-sm mt-1">House of David - Member Management</p>
-            </div>
-            <Link
-              to="/"
-              className="bg-white/10 hover:bg-white/20 text-white px-6 py-2 rounded-lg font-semibold transition-all"
-            >
-              Logout
-            </Link>
-          </div>
-        </div>
-      </header>
+      {/* Uniform Header */}
+      <UniformHeader />
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Page Title */}
+        <div className="mb-6">
+          <h1 className="text-3xl font-bold text-gray-800">Super Admin Dashboard</h1>
+          <p className="text-purple-600 text-sm mt-1">House of David - Member Management</p>
+        </div>
         {/* Search Bar */}
         <div className="mb-6">
           <input
@@ -227,20 +234,11 @@ const SuperAdminDashboard = () => {
           )}
         </div>
 
-        {/* Action Buttons */}
-        <div className="mt-8 flex gap-4 justify-center">
-          <Link
-            to="/admin/dashboard"
-            className="bg-purple-600 hover:bg-purple-700 text-white font-semibold px-8 py-3 rounded-lg transition-all shadow-lg hover:shadow-xl"
-          >
-            Add New Member
-          </Link>
-          <Link
-            to="/admin/manage-members"
-            className="bg-cyan-400 hover:bg-cyan-500 text-white font-semibold px-8 py-3 rounded-lg transition-all shadow-lg hover:shadow-xl"
-          >
-            Manage Members
-          </Link>
+        {/* Info Message - SuperAdmin is view-only */}
+        <div className="mt-8 bg-blue-50 border-l-4 border-blue-500 p-4 rounded">
+          <p className="text-blue-800 text-sm">
+            <strong>ℹ️ Super Admin Dashboard:</strong> This dashboard is for viewing member data and statistics only. To add or manage members, please use the Admission Admin account.
+          </p>
         </div>
 
         {/* Giving Summary Cards */}
@@ -318,12 +316,15 @@ const SuperAdminDashboard = () => {
                           {new Date(record.date).toLocaleDateString()}
                         </div>
                       </td>
-                      <td className="px-4 py-3 whitespace-nowrap">
+                      <td className="px-4 py-3">
                         <div className="text-sm font-medium text-gray-900">
-                          {record.donor?.firstName || record.donor?.fullName || 'Anonymous'}
+                          {record.donor?.fullName || record.createdBy?.fullName || 'Anonymous'}
                         </div>
                         <div className="text-xs text-gray-500">
-                          {record.donor?.email}
+                          ID: {record.donor?.idNumber || record.createdBy?.idNumber || 'N/A'}
+                        </div>
+                        <div className="text-xs text-blue-600">
+                          {record.donor?.email || record.createdBy?.email || ''}
                         </div>
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap">

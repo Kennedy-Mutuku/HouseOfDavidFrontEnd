@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useMemberContext } from '../../context/MemberContext';
+import { useAuth } from '../../context/AuthContext';
+import UniformHeader from '../../components/UniformHeader';
 
 const AdminDashboard = () => {
   const { members, addMember } = useMemberContext();
+  const { isAuthenticated, user } = useAuth();
 
   const [formData, setFormData] = useState({
     fullName: '',
@@ -38,44 +41,65 @@ const AdminDashboard = () => {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Add member using context
-    addMember(formData);
+    try {
+      // Split full name into first and last name
+      const nameParts = formData.fullName.trim().split(' ');
+      const firstName = nameParts[0];
+      const lastName = nameParts.slice(1).join(' ') || nameParts[0]; // Use first name again if no last name
 
-    // Show success message
-    setShowSuccess(true);
-    setTimeout(() => setShowSuccess(false), 3000);
+      // Map form data to match backend model
+      const memberPayload = {
+        firstName,
+        lastName,
+        email: formData.email,
+        phone: formData.phoneNo, // Map phoneNo to phone
+        idNo: formData.idNo,
+        dateOfBirth: formData.dateOfBirth,
+        membershipDate: formData.dateJoined, // Map dateJoined to membershipDate
+        peopleGroup: formData.peopleGroup,
+        growthGroup: formData.growthGroup
+      };
 
-    // Clear form
-    handleClear();
+      // Add member using context
+      await addMember(memberPayload);
+
+      // Show success message
+      setShowSuccess(true);
+      setTimeout(() => setShowSuccess(false), 3000);
+
+      // Clear form
+      handleClear();
+    } catch (error) {
+      console.error('Error submitting member:', error);
+      // Error handling is done in the context
+    }
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-purple-700">
+      {/* Uniform Header */}
+      <UniformHeader />
+
       <div className="max-w-2xl mx-auto px-4 py-8">
-        {/* Logo and Header */}
+        {/* Form Card */}
         <div className="bg-white rounded-3xl shadow-2xl overflow-hidden">
-          {/* Logo Section */}
-          <div className="bg-gradient-to-r from-purple-800 via-purple-700 to-purple-900 p-6 flex justify-center">
-            <div className="relative">
-              <div className="absolute inset-0 bg-gold-400 rounded-full blur-lg opacity-60"></div>
-              <div className="relative h-24 w-24 rounded-full border-4 border-gold-400 shadow-2xl ring-2 ring-white/30 overflow-hidden bg-white flex items-center justify-center">
-                <img
-                  src="/images/logo.jpg"
-                  alt="House of David Logo"
-                  className="w-full h-full object-contain p-2"
-                />
-              </div>
-            </div>
-          </div>
 
           {/* Form Section */}
           <div className="p-6 sm:p-8">
             <h1 className="text-3xl font-bold text-gray-800 text-center mb-8">
               Admit New Member
             </h1>
+
+            {/* Authentication Warning */}
+            {!isAuthenticated && (
+              <div className="mb-6 bg-orange-100 border-l-4 border-orange-500 text-orange-700 p-4 rounded">
+                <p className="font-bold">⚠️ Login Required</p>
+                <p className="text-sm">You must log in as an admin before you can add members. Click the user icon in the header to log in.</p>
+              </div>
+            )}
 
             {/* Success Message */}
             {showSuccess && (
