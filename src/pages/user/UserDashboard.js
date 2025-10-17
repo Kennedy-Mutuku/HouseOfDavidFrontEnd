@@ -8,9 +8,13 @@ import {
   FiChevronRight
 } from 'react-icons/fi';
 import { toast } from 'react-toastify';
+import { useAuth } from '../../context/AuthContext';
+import axios from 'axios';
 import GivingModal from '../../components/GivingModal';
+import MemberDetailModal from '../../components/MemberDetailModal';
 
 const UserDashboard = () => {
+  const { user, isAuthenticated } = useAuth();
   const [expandedSections, setExpandedSections] = useState({});
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -18,6 +22,43 @@ const UserDashboard = () => {
     isOpen: false,
     type: ''
   });
+  const [showUserInfo, setShowUserInfo] = useState(false);
+  const [memberData, setMemberData] = useState(null);
+  const [loadingMemberData, setLoadingMemberData] = useState(false);
+
+  // Fetch member data when info button is clicked
+  useEffect(() => {
+    if (showUserInfo && isAuthenticated && user && !memberData) {
+      fetchMemberData();
+    }
+  }, [showUserInfo, isAuthenticated, user]);
+
+  const fetchMemberData = async () => {
+    if (!user?.email) return;
+
+    setLoadingMemberData(true);
+    try {
+      const response = await axios.get('/api/members');
+      const members = response.data.data;
+      const matchedMember = members.find(m => m.email === user.email);
+
+      if (matchedMember) {
+        setMemberData(matchedMember);
+      }
+    } catch (error) {
+      console.error('Error fetching member data:', error);
+    } finally {
+      setLoadingMemberData(false);
+    }
+  };
+
+  const handleInfoClick = () => {
+    setShowUserInfo(true);
+  };
+
+  const handleCloseInfo = () => {
+    setShowUserInfo(false);
+  };
 
   const carouselSlides = [
     {
@@ -228,8 +269,6 @@ const UserDashboard = () => {
           ))}
         </div>
 
-        {/* Gradient Overlay at Bottom */}
-        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black/50 to-transparent pointer-events-none"></div>
       </div>
 
       {/* Welcome Banner with Sweet Church Message - Overlapping */}
@@ -242,7 +281,7 @@ const UserDashboard = () => {
       </div>
 
       {/* Main Content Card */}
-      <div className="bg-gradient-to-br from-purple-700 via-purple-800 to-purple-900 rounded-t-3xl -mt-5 relative z-10 shadow-2xl">
+      <div className="bg-gradient-to-br from-purple-700 via-purple-800 to-purple-900 -mt-5 relative z-10 shadow-2xl">
         <div className="px-4 sm:px-6 lg:px-12 xl:px-16 2xl:px-20 py-8 pt-16">
 
           {/* Collapsible Ministry Sections */}
@@ -298,10 +337,11 @@ const UserDashboard = () => {
 
       {/* Floating Action Buttons */}
       <div className="fixed bottom-6 right-6 flex flex-col space-y-3 z-50">
-        {/* Help Button */}
+        {/* Info Button - Show User Information */}
         <button
+          onClick={handleInfoClick}
           className="bg-cyan-400 hover:bg-cyan-500 text-white rounded-full p-4 shadow-lg transition-all transform hover:scale-110"
-          aria-label="Help"
+          aria-label="My Information"
         >
           <FiHelpCircle className="w-6 h-6" />
         </button>
@@ -326,6 +366,13 @@ const UserDashboard = () => {
         onSuccess={() => {
           toast.success('Thank you for your contribution!');
         }}
+      />
+
+      {/* User Info Modal */}
+      <MemberDetailModal
+        isOpen={showUserInfo}
+        onClose={handleCloseInfo}
+        member={memberData}
       />
     </div>
   );

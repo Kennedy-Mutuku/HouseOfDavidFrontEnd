@@ -5,6 +5,7 @@ import { useAuth } from '../../context/AuthContext';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import UniformHeader from '../../components/UniformHeader';
+import MemberDetailModal from '../../components/MemberDetailModal';
 
 const SuperAdminDashboard = () => {
   const { members } = useMemberContext();
@@ -18,6 +19,27 @@ const SuperAdminDashboard = () => {
     specialGivingTotal: 0
   });
   const [loadingGiving, setLoadingGiving] = useState(true);
+  const [selectedMember, setSelectedMember] = useState(null);
+  const [showMemberDetail, setShowMemberDetail] = useState(false);
+
+  const formatDate = (date) => {
+    if (!date) return '-';
+    return new Date(date).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
+  };
+
+  const handleMemberClick = (member) => {
+    setSelectedMember(member);
+    setShowMemberDetail(true);
+  };
+
+  const handleCloseDetail = () => {
+    setShowMemberDetail(false);
+    setSelectedMember(null);
+  };
 
   // Filter members based on search query
   const filteredMembers = members.filter(member => {
@@ -179,7 +201,8 @@ const SuperAdminDashboard = () => {
                   {filteredMembers.map((member, index) => (
                     <tr
                       key={member.membershipNumber || index}
-                      className="hover:bg-gray-50 transition-colors"
+                      onClick={() => handleMemberClick(member)}
+                      className="hover:bg-cyan-50 transition-colors cursor-pointer"
                     >
                       <td className="px-4 py-3 whitespace-nowrap">
                         <div className="text-sm font-medium text-gray-900">
@@ -187,13 +210,13 @@ const SuperAdminDashboard = () => {
                         </div>
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">
-                          {member.membershipNumber}
+                        <div className="text-sm text-gray-900 font-semibold">
+                          {member.membershipNumber || '-'}
                         </div>
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap">
                         <div className="text-sm text-gray-900">
-                          {member.idNo}
+                          {member.idNo || '-'}
                         </div>
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap">
@@ -213,17 +236,17 @@ const SuperAdminDashboard = () => {
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap">
                         <div className="text-sm text-gray-900">
-                          {member.phoneNo}
+                          {member.phone || '-'}
                         </div>
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap">
                         <div className="text-sm text-gray-900">
-                          {member.dateOfBirth}
+                          {formatDate(member.dateOfBirth)}
                         </div>
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap">
                         <div className="text-sm text-gray-900">
-                          {member.dateJoined}
+                          {formatDate(member.membershipDate)}
                         </div>
                       </td>
                     </tr>
@@ -234,10 +257,10 @@ const SuperAdminDashboard = () => {
           )}
         </div>
 
-        {/* Info Message - SuperAdmin is view-only */}
-        <div className="mt-8 bg-blue-50 border-l-4 border-blue-500 p-4 rounded">
-          <p className="text-blue-800 text-sm">
-            <strong>ℹ️ Super Admin Dashboard:</strong> This dashboard is for viewing member data and statistics only. To add or manage members, please use the Admission Admin account.
+        {/* Info Message - SuperAdmin has click-to-view functionality */}
+        <div className="mt-8 bg-cyan-50 border-l-4 border-cyan-500 p-4 rounded shadow-md">
+          <p className="text-cyan-900 text-sm">
+            <strong>💡 Tip:</strong> Click on any member row in the table above to view their complete profile information including REG number, ID number, date of birth, date joined, and all other details.
           </p>
         </div>
 
@@ -400,6 +423,13 @@ const SuperAdminDashboard = () => {
           </div>
         </div>
       </div>
+
+      {/* Member Detail Modal */}
+      <MemberDetailModal
+        isOpen={showMemberDetail}
+        onClose={handleCloseDetail}
+        member={selectedMember}
+      />
     </div>
   );
 };

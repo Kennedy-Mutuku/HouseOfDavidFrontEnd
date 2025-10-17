@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useMemberContext } from '../context/MemberContext';
+import axios from 'axios';
 import {
   FiHome,
   FiDollarSign,
@@ -26,6 +27,8 @@ const UserLayout = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isEditingGroups, setIsEditingGroups] = useState(false);
   const [loginError, setLoginError] = useState('');
+  const [memberData, setMemberData] = useState(null);
+  const [loadingMemberData, setLoadingMemberData] = useState(false);
 
   // Login form state
   const [loginForm, setLoginForm] = useState({
@@ -38,6 +41,42 @@ const UserLayout = () => {
     peopleGroup: '',
     growthGroup: ''
   });
+
+  // Fetch member data when user is authenticated and profile modal is opened
+  useEffect(() => {
+    if (isAuthenticated && user && showProfileModal && !memberData) {
+      fetchMemberData();
+    }
+  }, [isAuthenticated, user, showProfileModal]);
+
+  const fetchMemberData = async () => {
+    if (!user?.email) return;
+
+    setLoadingMemberData(true);
+    try {
+      // Fetch all members and find the one matching current user's email
+      const response = await axios.get('/api/members');
+      const members = response.data.data;
+      const matchedMember = members.find(m => m.email === user.email);
+
+      if (matchedMember) {
+        setMemberData(matchedMember);
+      }
+    } catch (error) {
+      console.error('Error fetching member data:', error);
+    } finally {
+      setLoadingMemberData(false);
+    }
+  };
+
+  const formatDate = (date) => {
+    if (!date) return 'Not set';
+    return new Date(date).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  };
 
   const handleLoginSubmit = async (e) => {
     e.preventDefault();
@@ -323,42 +362,46 @@ const UserLayout = () => {
                   {/* Name */}
                   <div className="bg-gray-50 rounded-xl p-3 border border-gray-200">
                     <p className="text-xs text-gray-600 font-semibold mb-1">Name:</p>
-                    <p className="text-gray-900 font-medium">{user?.fullName}</p>
+                    <p className="text-gray-900 font-medium">{memberData?.fullName || user?.fullName}</p>
                   </div>
 
                   {/* Email */}
                   <div className="bg-gray-50 rounded-xl p-3 border border-gray-200">
                     <p className="text-xs text-gray-600 font-semibold mb-1">Email:</p>
-                    <p className="text-blue-600 font-medium text-sm">{user?.email}</p>
+                    <p className="text-blue-600 font-medium text-sm">{memberData?.email || user?.email}</p>
                   </div>
 
                   {/* Phone */}
                   <div className="bg-gray-50 rounded-xl p-3 border border-gray-200">
                     <p className="text-xs text-gray-600 font-semibold mb-1">Phone:</p>
-                    <p className="text-gray-900 font-medium">{user?.phoneNo}</p>
+                    <p className="text-gray-900 font-medium">{memberData?.phone || user?.phone || 'Not provided'}</p>
                   </div>
 
                   {/* Membership Number */}
                   <div className="bg-gray-50 rounded-xl p-3 border border-gray-200">
                     <p className="text-xs text-gray-600 font-semibold mb-1">Membership Number:</p>
-                    <p className="text-gray-900 font-medium">{user?.membershipNumber}</p>
+                    <p className="text-gray-900 font-medium">{memberData?.membershipNumber || 'Not assigned'}</p>
                   </div>
 
-                  {/* Date of Birth */}
-                  {user?.dateOfBirth && (
+                  {/* ID Number */}
+                  {memberData?.idNo && (
                     <div className="bg-gray-50 rounded-xl p-3 border border-gray-200">
-                      <p className="text-xs text-gray-600 font-semibold mb-1">Date of Birth:</p>
-                      <p className="text-gray-900 font-medium">{user?.dateOfBirth}</p>
+                      <p className="text-xs text-gray-600 font-semibold mb-1">ID Number:</p>
+                      <p className="text-gray-900 font-medium">{memberData.idNo}</p>
                     </div>
                   )}
 
+                  {/* Date of Birth */}
+                  <div className="bg-gray-50 rounded-xl p-3 border border-gray-200">
+                    <p className="text-xs text-gray-600 font-semibold mb-1">Date of Birth:</p>
+                    <p className="text-gray-900 font-medium">{formatDate(memberData?.dateOfBirth || user?.dateOfBirth)}</p>
+                  </div>
+
                   {/* Date Joined */}
-                  {user?.dateJoined && (
-                    <div className="bg-gray-50 rounded-xl p-3 border border-gray-200">
-                      <p className="text-xs text-gray-600 font-semibold mb-1">Date Joined Church:</p>
-                      <p className="text-gray-900 font-medium">{user?.dateJoined}</p>
-                    </div>
-                  )}
+                  <div className="bg-gray-50 rounded-xl p-3 border border-gray-200">
+                    <p className="text-xs text-gray-600 font-semibold mb-1">Date Joined Church:</p>
+                    <p className="text-gray-900 font-medium">{formatDate(memberData?.membershipDate || user?.dateJoinedCommunity)}</p>
+                  </div>
 
                   {/* People Group - Editable */}
                   <div className="bg-gray-50 rounded-xl p-3 border border-gray-200">

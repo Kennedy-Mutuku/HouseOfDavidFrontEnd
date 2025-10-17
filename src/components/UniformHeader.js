@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { FiMenu, FiX, FiEye, FiEyeOff, FiEdit2 } from 'react-icons/fi';
 import { useMemberContext } from '../context/MemberContext';
+import axios from 'axios';
 
 const UniformHeader = ({ showMobileMenu = false }) => {
   const navigate = useNavigate();
@@ -13,6 +14,8 @@ const UniformHeader = ({ showMobileMenu = false }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [isEditingGroups, setIsEditingGroups] = useState(false);
   const [loginError, setLoginError] = useState('');
+  const [memberData, setMemberData] = useState(null);
+  const [loadingMemberData, setLoadingMemberData] = useState(false);
 
   // Login form state
   const [loginForm, setLoginForm] = useState({
@@ -25,6 +28,62 @@ const UniformHeader = ({ showMobileMenu = false }) => {
     peopleGroup: '',
     growthGroup: ''
   });
+
+  // Fetch member data when user is authenticated and profile modal is opened
+  useEffect(() => {
+    if (isAuthenticated && user && showProfileModal) {
+      console.log('Fetching member data for:', user.email);
+      fetchMemberData();
+    }
+  }, [isAuthenticated, user, showProfileModal]);
+
+  const fetchMemberData = async () => {
+    if (!user?.email) {
+      console.log('No user email available');
+      return;
+    }
+
+    setLoadingMemberData(true);
+    try {
+      console.log('Fetching members from API...');
+      // Get token from localStorage
+      const token = localStorage.getItem('token');
+      console.log('Token available:', !!token);
+
+      // Fetch all members and find the one matching current user's email
+      const response = await axios.get('/api/members', {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      console.log('API Response:', response.data);
+      const members = response.data.data;
+      console.log('Total members:', members.length);
+      const matchedMember = members.find(m => m.email.toLowerCase() === user.email.toLowerCase());
+      console.log('Matched member:', matchedMember);
+
+      if (matchedMember) {
+        setMemberData(matchedMember);
+        console.log('Member data set:', matchedMember);
+      } else {
+        console.log('No matching member found for email:', user.email);
+      }
+    } catch (error) {
+      console.error('Error fetching member data:', error);
+      console.error('Error details:', error.response?.data);
+    } finally {
+      setLoadingMemberData(false);
+    }
+  };
+
+  const formatDate = (date) => {
+    if (!date) return 'Not set';
+    return new Date(date).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  };
 
   const handleLoginSubmit = async (e) => {
     e.preventDefault();
@@ -246,23 +305,45 @@ const UniformHeader = ({ showMobileMenu = false }) => {
                   Welcome back, {user?.fullName}!
                 </h2>
 
-                {/* For Admins/SuperAdmins - Show only logout button */}
-                {(user?.role === 'admin' || user?.role === 'ADMIN' ||
-                  user?.role === 'superAdmin' || user?.role === 'SUPERADMIN') ? (
+                {/* For Admins/SuperAdmins - Show only title and logout button */}
+                {((Array.isArray(user?.role) && (user.role.includes('admin') || user.role.includes('superadmin'))) ||
+                  user?.role === 'admin' || user?.role === 'ADMIN' ||
+                  user?.role === 'superAdmin' || user?.role === 'SUPERADMIN' || user?.role === 'superadmin') ? (
                   <div className="space-y-4">
-                    <div className="bg-purple-50 border-l-4 border-purple-500 p-4 rounded">
-                      <p className="text-purple-800 text-sm">
-                        <strong>Administrator Account</strong>
-                      </p>
-                      <p className="text-purple-700 text-xs mt-1">
-                        You are logged in as {user?.role === 'superAdmin' || user?.role === 'SUPERADMIN' ? 'Super Admin' : 'Admission Admin'}
-                      </p>
+                    <div className="bg-gradient-to-br from-purple-100 via-purple-50 to-indigo-100 border-2 border-purple-300 rounded-xl p-6 shadow-lg text-center">
+                      <div className="mb-3">
+                        <div className="w-20 h-20 mx-auto rounded-full bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center text-white font-extrabold text-3xl border-4 border-white shadow-2xl">
+                          {user?.fullName?.split(' ').slice(0, 2).map(n => n[0]).join('') || 'SA'}
+                        </div>
+                      </div>
+                      <h3 className="text-2xl font-extrabold text-purple-900 mb-2">
+                        {(Array.isArray(user?.role) && user.role.includes('superadmin')) ||
+                         user?.role === 'superAdmin' || user?.role === 'SUPERADMIN' || user?.role === 'superadmin'
+                          ? 'Super Admin' : 'Admission Admin'}
+                      </h3>
+                      <button
+                        onClick={() => {
+                          const isSuperAdmin = (Array.isArray(user?.role) && user.role.includes('superadmin')) ||
+                                               user?.role === 'superAdmin' || user?.role === 'SUPERADMIN' || user?.role === 'superadmin';
+                          setShowProfileModal(false);
+                          if (isSuperAdmin) {
+                            navigate('/superadmin/dashboard');
+                          } else {
+                            navigate('/admin/dashboard');
+                          }
+                        }}
+                        className="inline-block bg-white px-4 py-2 rounded-full border-2 border-purple-300 shadow-md hover:bg-purple-50 hover:border-purple-400 transition-all cursor-pointer"
+                      >
+                        <p className="text-purple-700 text-sm font-bold">
+                          Administrator Account
+                        </p>
+                      </button>
                     </div>
 
                     {/* Logout Button */}
                     <button
                       onClick={handleLogout}
-                      className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-xl transition-all shadow-lg hover:shadow-xl"
+                      className="w-full bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-bold py-4 px-6 rounded-xl transition-all shadow-lg hover:shadow-2xl transform hover:scale-105"
                     >
                       Log Out
                     </button>
@@ -278,115 +359,118 @@ const UniformHeader = ({ showMobileMenu = false }) => {
                       Continue to House of David
                     </button>
 
+                    {loadingMemberData ? (
+                      <div className="flex items-center justify-center py-12">
+                        <div className="animate-spin rounded-full h-12 w-12 border-4 border-purple-500 border-t-transparent"></div>
+                      </div>
+                    ) : (
                     <div className="space-y-3 mb-4">
                   {/* Name */}
                   <div className="bg-gray-50 rounded-xl p-3 border border-gray-200">
                     <p className="text-xs text-gray-600 font-semibold mb-1">Name:</p>
-                    <p className="text-gray-900 font-medium">{user?.fullName}</p>
+                    <p className="text-gray-900 font-medium">{memberData?.fullName || user?.fullName}</p>
                   </div>
 
                   {/* Email */}
                   <div className="bg-gray-50 rounded-xl p-3 border border-gray-200">
                     <p className="text-xs text-gray-600 font-semibold mb-1">Email:</p>
-                    <p className="text-blue-600 font-medium text-sm">{user?.email}</p>
+                    <p className="text-blue-600 font-medium text-sm">{memberData?.email || user?.email}</p>
                   </div>
 
                   {/* Phone */}
-                  {user?.phoneNo && (
+                  {(memberData?.phone || user?.phone) && (
                     <div className="bg-gray-50 rounded-xl p-3 border border-gray-200">
                       <p className="text-xs text-gray-600 font-semibold mb-1">Phone:</p>
-                      <p className="text-gray-900 font-medium">{user?.phoneNo}</p>
+                      <p className="text-gray-900 font-medium">{memberData?.phone || user?.phone}</p>
                     </div>
                   )}
 
-                  {/* Membership Number */}
-                  {user?.membershipNumber && (
+                  {/* REG (Membership Number) */}
+                  {memberData?.membershipNumber && (
                     <div className="bg-gray-50 rounded-xl p-3 border border-gray-200">
-                      <p className="text-xs text-gray-600 font-semibold mb-1">Membership Number:</p>
-                      <p className="text-gray-900 font-medium">{user?.membershipNumber}</p>
+                      <p className="text-xs text-gray-600 font-semibold mb-1">REG:</p>
+                      <p className="text-gray-900 font-medium">{memberData.membershipNumber}</p>
+                    </div>
+                  )}
+
+                  {/* ID Number */}
+                  {(memberData?.idNo || user?.idNumber) && (
+                    <div className="bg-gray-50 rounded-xl p-3 border border-gray-200">
+                      <p className="text-xs text-gray-600 font-semibold mb-1">ID Number:</p>
+                      <p className="text-gray-900 font-medium">{memberData?.idNo || user?.idNumber}</p>
                     </div>
                   )}
 
                   {/* Date of Birth */}
-                  {user?.dateOfBirth && (
+                  {(memberData?.dateOfBirth || user?.dateOfBirth) && (
                     <div className="bg-gray-50 rounded-xl p-3 border border-gray-200">
                       <p className="text-xs text-gray-600 font-semibold mb-1">Date of Birth:</p>
-                      <p className="text-gray-900 font-medium">{user?.dateOfBirth}</p>
+                      <p className="text-gray-900 font-medium">{formatDate(memberData?.dateOfBirth || user?.dateOfBirth)}</p>
                     </div>
                   )}
 
                   {/* Date Joined */}
-                  {user?.dateJoined && (
+                  {(memberData?.membershipDate || user?.dateJoinedCommunity) && (
                     <div className="bg-gray-50 rounded-xl p-3 border border-gray-200">
-                      <p className="text-xs text-gray-600 font-semibold mb-1">Date Joined Church:</p>
-                      <p className="text-gray-900 font-medium">{user?.dateJoined}</p>
+                      <p className="text-xs text-gray-600 font-semibold mb-1">Date Joined:</p>
+                      <p className="text-gray-900 font-medium">{formatDate(memberData?.membershipDate || user?.dateJoinedCommunity)}</p>
                     </div>
                   )}
 
                   {/* People Group - Editable */}
-                  {(user?.role !== 'admin' && user?.role !== 'ADMIN' &&
-                    user?.role !== 'superAdmin' && user?.role !== 'SUPERADMIN') && (
-                    <div className="bg-gray-50 rounded-xl p-3 border border-gray-200">
-                      <div className="flex items-center justify-between mb-1">
-                        <p className="text-xs text-gray-600 font-semibold">People Group:</p>
-                        {!isEditingGroups && (
-                          <button
-                            onClick={handleEditGroups}
-                            className="text-purple-600 hover:text-purple-700"
-                          >
-                            <FiEdit2 className="w-4 h-4" />
-                          </button>
-                        )}
-                      </div>
-                      {isEditingGroups ? (
-                        <select
-                          value={groupForm.peopleGroup}
-                          onChange={(e) => setGroupForm({ ...groupForm, peopleGroup: e.target.value })}
-                          className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm"
+                  <div className="bg-gray-50 rounded-xl p-3 border border-gray-200">
+                    <div className="flex items-center justify-between mb-1">
+                      <p className="text-xs text-gray-600 font-semibold">People Group:</p>
+                      {!isEditingGroups && (
+                        <button
+                          onClick={handleEditGroups}
+                          className="text-purple-600 hover:text-purple-700"
                         >
-                          <option value="">Choose...</option>
-                          <option value="Youth">Youth</option>
-                          <option value="Adults">Adults</option>
-                          <option value="Seniors">Seniors</option>
-                          <option value="Children">Children</option>
-                        </select>
-                      ) : (
-                        <p className="text-gray-900 font-medium">{user?.peopleGroup || 'Not set'}</p>
+                          <FiEdit2 className="w-4 h-4" />
+                        </button>
                       )}
                     </div>
-                  )}
+                    {isEditingGroups ? (
+                      <select
+                        value={groupForm.peopleGroup}
+                        onChange={(e) => setGroupForm({ ...groupForm, peopleGroup: e.target.value })}
+                        className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm"
+                      >
+                        <option value="">Choose...</option>
+                        <option value="Youth">Youth</option>
+                        <option value="Adults">Adults</option>
+                        <option value="Seniors">Seniors</option>
+                        <option value="Children">Children</option>
+                      </select>
+                    ) : (
+                      <p className="text-gray-900 font-medium">{user?.peopleGroup || 'Not set'}</p>
+                    )}
+                  </div>
 
                   {/* Growth Group - Editable */}
-                  {user?.role !== 'admin' && (
-                    <div className="bg-gray-50 rounded-xl p-3 border border-gray-200">
-                      <p className="text-xs text-gray-600 font-semibold mb-1">Growth Group:</p>
-                      {isEditingGroups ? (
-                        <select
-                          value={groupForm.growthGroup}
-                          onChange={(e) => setGroupForm({ ...groupForm, growthGroup: e.target.value })}
-                          className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm"
-                        >
-                          <option value="">Choose...</option>
-                          <option value="Group A">Group A</option>
-                          <option value="Group B">Group B</option>
-                          <option value="Group C">Group C</option>
-                          <option value="Group D">Group D</option>
-                        </select>
-                      ) : (
-                        <p className="text-gray-900 font-medium">{user?.growthGroup || 'Not set'}</p>
-                      )}
-                    </div>
-                  )}
-
-                  {/* Role */}
                   <div className="bg-gray-50 rounded-xl p-3 border border-gray-200">
-                    <p className="text-xs text-gray-600 font-semibold mb-1">Role:</p>
-                    <p className="text-gray-900 font-medium capitalize">{user?.role}</p>
+                    <p className="text-xs text-gray-600 font-semibold mb-1">Growth Group:</p>
+                    {isEditingGroups ? (
+                      <select
+                        value={groupForm.growthGroup}
+                        onChange={(e) => setGroupForm({ ...groupForm, growthGroup: e.target.value })}
+                        className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm"
+                      >
+                        <option value="">Choose...</option>
+                        <option value="Group A">Group A</option>
+                        <option value="Group B">Group B</option>
+                        <option value="Group C">Group C</option>
+                        <option value="Group D">Group D</option>
+                      </select>
+                    ) : (
+                      <p className="text-gray-900 font-medium">{user?.growthGroup || 'Not set'}</p>
+                    )}
                   </div>
                 </div>
+                    )}
 
                 {/* Edit Buttons */}
-                {isEditingGroups && (
+                {!loadingMemberData && isEditingGroups && (
                   <div className="flex gap-2 mb-3">
                     <button
                       onClick={handleCancelEdit}
@@ -403,13 +487,15 @@ const UniformHeader = ({ showMobileMenu = false }) => {
                   </div>
                 )}
 
-                    {/* Logout Button */}
-                    <button
-                      onClick={handleLogout}
-                      className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2.5 px-6 rounded-xl transition-all shadow-lg hover:shadow-xl"
-                    >
-                      Log Out
-                    </button>
+                    {/* Logout Button - Always shown for regular users */}
+                    {!loadingMemberData && (
+                      <button
+                        onClick={handleLogout}
+                        className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2.5 px-6 rounded-xl transition-all shadow-lg hover:shadow-xl"
+                      >
+                        Log Out
+                      </button>
+                    )}
                   </>
                 )}
               </div>
