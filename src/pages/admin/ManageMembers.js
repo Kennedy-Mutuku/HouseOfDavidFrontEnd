@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useMemberContext } from '../../context/MemberContext';
-import { FiSearch, FiRefreshCw, FiUser, FiMail, FiPhone } from 'react-icons/fi';
+import { FiSearch, FiRefreshCw, FiUser, FiMail, FiPhone, FiEye } from 'react-icons/fi';
 import UniformHeader from '../../components/UniformHeader';
+import MemberDetailModal from '../../components/MemberDetailModal';
 
 const ManageMembers = () => {
   const { members, updateMember } = useMemberContext();
   const [searchQuery, setSearchQuery] = useState('');
   const [resetSuccess, setResetSuccess] = useState(null);
+  const [selectedMember, setSelectedMember] = useState(null);
 
   // Filter members based on search query
   const filteredMembers = members.filter(member => {
@@ -211,18 +213,35 @@ const ManageMembers = () => {
                         </span>
                       )}
                     </div>
-                    <button
-                      onClick={() => handleResetPassword(member)}
-                      className="bg-red-600 hover:bg-red-700 text-white font-semibold px-6 py-2 rounded-lg transition-all shadow-md hover:shadow-lg"
-                    >
-                      Reset Password
-                    </button>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => setSelectedMember(member)}
+                        className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-2 rounded-lg transition-all shadow-md hover:shadow-lg flex items-center gap-2"
+                      >
+                        <FiEye className="w-4 h-4" />
+                        View Details
+                      </button>
+                      <button
+                        onClick={() => handleResetPassword(member)}
+                        className="bg-red-600 hover:bg-red-700 text-white font-semibold px-6 py-2 rounded-lg transition-all shadow-md hover:shadow-lg"
+                      >
+                        Reset Password
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
             ))
           )}
         </div>
+
+        {/* Member Detail Modal */}
+        {selectedMember && (
+          <MemberDetailModal
+            member={selectedMember}
+            onClose={() => setSelectedMember(null)}
+          />
+        )}
 
         {/* Back to Top Button */}
         {filteredMembers.length > 3 && (
