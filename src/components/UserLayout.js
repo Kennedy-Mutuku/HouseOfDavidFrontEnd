@@ -148,28 +148,38 @@ const UserLayout = () => {
   };
 
   const handleEditGroups = () => {
+    // Initialize form with current member data
+    setGroupForm({
+      peopleGroup: memberData?.peopleGroup || '',
+      growthGroup: memberData?.growthGroup || ''
+    });
     setIsEditingGroups(true);
   };
 
-  const handleSaveGroups = () => {
-    if (user && user.email) {
-      // Update member in context
-      updateMember(user.email, {
-        peopleGroup: groupForm.peopleGroup,
-        growthGroup: groupForm.growthGroup
-      });
+  const handleSaveGroups = async () => {
+    if (memberData && memberData._id) {
+      try {
+        // Update member in database
+        await updateMember(memberData._id, {
+          peopleGroup: groupForm.peopleGroup,
+          growthGroup: groupForm.growthGroup
+        });
 
-      setIsEditingGroups(false);
-      setShowProfileModal(false);
-      // Page will refresh to show updated groups
-      window.location.reload();
+        // Refresh member data to show updated values
+        await fetchMemberData();
+
+        setIsEditingGroups(false);
+        setShowProfileModal(false);
+      } catch (error) {
+        console.error('Error saving groups:', error);
+      }
     }
   };
 
   const handleCancelEdit = () => {
     setGroupForm({
-      peopleGroup: user?.peopleGroup || '',
-      growthGroup: user?.growthGroup || ''
+      peopleGroup: memberData?.peopleGroup || '',
+      growthGroup: memberData?.growthGroup || ''
     });
     setIsEditingGroups(false);
   };
@@ -436,7 +446,7 @@ const UserLayout = () => {
                         <option value="Children">Children</option>
                       </select>
                     ) : (
-                      <p className="text-gray-900 font-medium">{user?.peopleGroup || 'Not set'}</p>
+                      <p className="text-gray-900 font-medium">{memberData?.peopleGroup || 'Not set'}</p>
                     )}
                   </div>
 
@@ -456,7 +466,7 @@ const UserLayout = () => {
                         <option value="Group D">Group D</option>
                       </select>
                     ) : (
-                      <p className="text-gray-900 font-medium">{user?.growthGroup || 'Not set'}</p>
+                      <p className="text-gray-900 font-medium">{memberData?.growthGroup || 'Not set'}</p>
                     )}
                   </div>
 
