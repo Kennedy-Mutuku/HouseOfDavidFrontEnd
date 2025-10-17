@@ -51,7 +51,7 @@ const UniformHeader = ({ showMobileMenu = false }) => {
       console.log('Token available:', !!token);
 
       // Fetch all members and find the one matching current user's email
-      const response = await axios.get('/api/members', {
+      const response = await axios.get('/members', {
         headers: {
           Authorization: `Bearer ${token}`
         }

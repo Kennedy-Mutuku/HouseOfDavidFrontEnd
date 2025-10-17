@@ -20,12 +20,28 @@ export const MemberProvider = ({ children }) => {
   useEffect(() => {
     const loadMembers = async () => {
       try {
-        const response = await axios.get('/members');
-        if (response.data.success) {
-          const dbMembers = response.data.data;
-          setMembers(dbMembers);
-          // Also save to localStorage for offline access
-          localStorage.setItem('hod_members', JSON.stringify(dbMembers));
+        // Get token from localStorage
+        const token = localStorage.getItem('token');
+
+        // Only try to fetch from database if user is authenticated
+        if (token) {
+          const response = await axios.get('/members', {
+            headers: {
+              Authorization: `Bearer ${token}`
+            }
+          });
+          if (response.data.success) {
+            const dbMembers = response.data.data;
+            setMembers(dbMembers);
+            // Also save to localStorage for offline access
+            localStorage.setItem('hod_members', JSON.stringify(dbMembers));
+          }
+        } else {
+          // If no token, try to load from localStorage
+          const savedMembers = localStorage.getItem('hod_members');
+          if (savedMembers) {
+            setMembers(JSON.parse(savedMembers));
+          }
         }
       } catch (error) {
         console.error('Error loading members from database:', error);
@@ -138,12 +154,21 @@ export const MemberProvider = ({ children }) => {
 
   const updateMember = async (memberId, updates) => {
     try {
-      const response = await axios.put(`/members/${memberId}`, updates);
+      // Get token from localStorage
+      const token = localStorage.getItem('token');
+
+      const response = await axios.put(`/members/${memberId}`, updates, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
       if (response.data.success) {
+        const updatedMember = response.data.data;
         setMembers(members.map(member =>
-          member._id === memberId ? response.data.data : member
+          member._id === memberId ? updatedMember : member
         ));
-        toast.success('Member updated successfully');
+        toast.success('Groups updated successfully!');
+        return updatedMember;
       }
     } catch (error) {
       toast.error(error.response?.data?.message || 'Failed to update member');

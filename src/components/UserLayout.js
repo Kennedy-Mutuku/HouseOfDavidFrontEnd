@@ -54,10 +54,17 @@ const UserLayout = () => {
 
     setLoadingMemberData(true);
     try {
+      // Get token from localStorage
+      const token = localStorage.getItem('token');
+
       // Fetch all members and find the one matching current user's email
-      const response = await axios.get('/api/members');
+      const response = await axios.get('/members', {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
       const members = response.data.data;
-      const matchedMember = members.find(m => m.email === user.email);
+      const matchedMember = members.find(m => m.email.toLowerCase() === user.email.toLowerCase());
 
       if (matchedMember) {
         setMemberData(matchedMember);
