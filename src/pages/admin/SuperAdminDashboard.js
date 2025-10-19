@@ -6,6 +6,8 @@ import axios from 'axios';
 import { toast } from 'react-toastify';
 import UniformHeader from '../../components/UniformHeader';
 import MemberDetailModal from '../../components/MemberDetailModal';
+import AdminInGatheringManagement from '../../components/AdminInGatheringManagement';
+import AdminNurturingManagement from '../../components/AdminNurturingManagement';
 
 const SuperAdminDashboard = () => {
   const { members } = useMemberContext();
@@ -21,6 +23,8 @@ const SuperAdminDashboard = () => {
   const [loadingGiving, setLoadingGiving] = useState(true);
   const [selectedMember, setSelectedMember] = useState(null);
   const [showMemberDetail, setShowMemberDetail] = useState(false);
+  const [showInGatheringManagement, setShowInGatheringManagement] = useState(false);
+  const [showNurturingManagement, setShowNurturingManagement] = useState(false);
 
   const formatDate = (dateString) => {
     if (!dateString) return '-';
@@ -182,6 +186,29 @@ const SuperAdminDashboard = () => {
             placeholder="Search by name, registration, or group..."
             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
           />
+        </div>
+
+        {/* Admin Action Buttons */}
+        <div className="mb-6 flex flex-wrap gap-3">
+          <button
+            onClick={() => setShowInGatheringManagement(true)}
+            className="flex items-center gap-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white px-6 py-3 rounded-lg font-semibold shadow-lg transition-all transform hover:scale-105"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+              <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z" />
+            </svg>
+            Manage In-Gatherings
+          </button>
+
+          <button
+            onClick={() => setShowNurturingManagement(true)}
+            className="flex items-center gap-2 bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white px-6 py-3 rounded-lg font-semibold shadow-lg transition-all transform hover:scale-105"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" />
+            </svg>
+            Manage Nurturing
+          </button>
         </div>
 
         {/* Table Card */}
@@ -484,6 +511,18 @@ const SuperAdminDashboard = () => {
         isOpen={showMemberDetail}
         onClose={handleCloseDetail}
         member={selectedMember}
+      />
+
+      {/* In-Gathering Management Modal */}
+      <AdminInGatheringManagement
+        isOpen={showInGatheringManagement}
+        onClose={() => setShowInGatheringManagement(false)}
+      />
+
+      {/* Nurturing Management Modal */}
+      <AdminNurturingManagement
+        isOpen={showNurturingManagement}
+        onClose={() => setShowNurturingManagement(false)}
       />
     </div>
   );

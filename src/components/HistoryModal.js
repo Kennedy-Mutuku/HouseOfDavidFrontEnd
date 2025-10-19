@@ -118,9 +118,11 @@ const HistoryModal = ({ isOpen, onClose, historyType, historyData, loading }) =>
         )}
         {item.status && (
           <span className={`inline-block mt-1 px-2 py-0.5 rounded-full text-[10px] font-semibold ${
-            item.status === 'Attended' ? 'bg-green-100 text-green-700' :
+            item.status === 'Approved' ? 'bg-green-100 text-green-700' :
+            item.status === 'Attended' ? 'bg-blue-100 text-blue-700' :
             item.status === 'Pending' ? 'bg-yellow-100 text-yellow-700' :
-            item.status === 'Not Interested' ? 'bg-red-100 text-red-700' :
+            item.status === 'Rejected' ? 'bg-red-100 text-red-700' :
+            item.status === 'Not Interested' ? 'bg-gray-100 text-gray-700' :
             'bg-gray-100 text-gray-700'
           }`}>
             {item.status}
@@ -139,16 +141,35 @@ const HistoryModal = ({ isOpen, onClose, historyType, historyData, loading }) =>
   );
 
   const renderNurturingHistory = (item) => (
-    <div className="border-l-4 border-orange-500 pl-4">
+    <div className="border-l-4 border-orange-500 pl-3">
       <div>
-        <p className="font-semibold text-gray-800">{item.activityType || 'Nurturing Activity'}</p>
-        <p className="text-sm text-gray-600">{formatDate(item.date || item.createdAt)}</p>
+        <p className="font-semibold text-sm text-gray-800">
+          {item.fullName}
+        </p>
+        <p className="text-xs text-gray-600">{formatDate(item.startDate || item.createdAt)}</p>
+        {item.phone && (
+          <p className="text-[10px] text-gray-500">Phone: {item.phone}</p>
+        )}
+        {item.status && (
+          <span className={`inline-block mt-1 px-2 py-0.5 rounded-full text-[10px] font-semibold ${
+            item.status === 'Approved' ? 'bg-green-100 text-green-700' :
+            item.status === 'Completed' ? 'bg-blue-100 text-blue-700' :
+            item.status === 'In Progress' ? 'bg-cyan-100 text-cyan-700' :
+            item.status === 'Pending' ? 'bg-yellow-100 text-yellow-700' :
+            item.status === 'Rejected' ? 'bg-red-100 text-red-700' :
+            'bg-gray-100 text-gray-700'
+          }`}>
+            {item.status}
+          </span>
+        )}
       </div>
-      {item.description && (
-        <p className="text-sm text-gray-500 mt-1">{item.description}</p>
+      {item.notes && (
+        <p className="text-xs text-gray-500 mt-0.5">{item.notes}</p>
       )}
-      {item.member && (
-        <p className="text-sm text-gray-600 mt-1">Member: {item.member}</p>
+      {item.sessions && item.sessions.length > 0 && (
+        <p className="text-[10px] text-gray-500 mt-0.5">
+          {item.sessions.length} session{item.sessions.length !== 1 ? 's' : ''}
+        </p>
       )}
     </div>
   );

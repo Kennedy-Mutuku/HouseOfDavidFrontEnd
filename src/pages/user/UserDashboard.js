@@ -17,6 +17,7 @@ import GivingModal from '../../components/GivingModal';
 import MemberDetailModal from '../../components/MemberDetailModal';
 import HistoryModal from '../../components/HistoryModal';
 import InGatheringModal from '../../components/InGatheringModal';
+import AddNurturingModal from '../../components/AddNurturingModal';
 
 const UserDashboard = () => {
   const { user, isAuthenticated } = useAuth();
@@ -28,6 +29,7 @@ const UserDashboard = () => {
     type: ''
   });
   const [inGatheringModal, setInGatheringModal] = useState(false);
+  const [nurturingModal, setNurturingModal] = useState(false);
   const [showUserInfo, setShowUserInfo] = useState(false);
   const [memberData, setMemberData] = useState(null);
   const [loadingMemberData, setLoadingMemberData] = useState(false);
@@ -188,6 +190,14 @@ const UserDashboard = () => {
     setInGatheringModal(false);
   };
 
+  const handleNurturingClick = () => {
+    setNurturingModal(true);
+  };
+
+  const closeNurturingModal = () => {
+    setNurturingModal(false);
+  };
+
   const handleHistoryClick = async (historyType) => {
     // Check if user is authenticated
     if (!isAuthenticated || !user) {
@@ -243,9 +253,14 @@ const UserDashboard = () => {
           break;
 
         case 'nurturing':
-          // Nurturing endpoint not yet implemented in backend
-          toast.info('Nurturing history feature coming soon!');
-          historyData = [];
+          // Fetch user's nurturing records
+          response = await axios.get('/nurturing/my-nurturing');
+          // Extract list array from response - backend returns { data: { list: [...], stats: {...} } }
+          historyData = response.data.data?.list || [];
+          // Sort by createdAt descending (latest first)
+          historyData.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+          console.log('Nurturing history response:', response.data);
+          console.log('Extracted nurturing history:', historyData);
           break;
 
         default:
@@ -411,12 +426,20 @@ const UserDashboard = () => {
             {sections.map((section, idx) => (
               <div key={section.id} className="overflow-hidden rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300">
                 <button
-                  onClick={() => section.id === 'ingathering' ? handleInGatheringClick() : toggleSection(section.id)}
+                  onClick={() => {
+                    if (section.id === 'ingathering') {
+                      handleInGatheringClick();
+                    } else if (section.id === 'nurturing') {
+                      handleNurturingClick();
+                    } else {
+                      toggleSection(section.id);
+                    }
+                  }}
                   className="w-full bg-gradient-to-r from-orange-500 via-orange-600 to-amber-600 hover:from-orange-600 hover:via-orange-700 hover:to-amber-700 text-white px-6 md:px-8 py-3 flex items-center justify-between transition-all duration-300 group shadow-lg"
                 >
                   <span className="font-bold text-sm md:text-base tracking-wide">{section.title}</span>
                   <div>
-                    {section.id === 'ingathering' ? (
+                    {(section.id === 'ingathering' || section.id === 'nurturing') ? (
                       <FiChevronRight className="w-5 h-5 group-hover:scale-110 transition-transform" />
                     ) : expandedSections[section.id] ? (
                       <FiChevronUp className="w-5 h-5 group-hover:scale-110 transition-transform" />
@@ -426,7 +449,7 @@ const UserDashboard = () => {
                   </div>
                 </button>
 
-                {expandedSections[section.id] && section.id !== 'ingathering' && (
+                {expandedSections[section.id] && section.id !== 'ingathering' && section.id !== 'nurturing' && (
                   <div className="bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50 px-6 md:px-8 py-6 border-x-4 border-b-4 border-orange-500/30 animate-fade-in">
                     <ul className="grid grid-cols-1 md:grid-cols-2 gap-3">
                       {section.items.map((item, index) => (
@@ -534,6 +557,15 @@ const UserDashboard = () => {
         onClose={closeInGatheringModal}
         onSuccess={() => {
           toast.success('Visitor added successfully!');
+        }}
+      />
+
+      {/* Nurturing Modal */}
+      <AddNurturingModal
+        isOpen={nurturingModal}
+        onClose={closeNurturingModal}
+        onSuccess={() => {
+          toast.success('Nurturing record added successfully!');
         }}
       />
 
