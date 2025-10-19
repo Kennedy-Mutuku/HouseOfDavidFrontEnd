@@ -1,4 +1,15 @@
+import { useState } from 'react';
+import AddInGathering from '../components/AddInGathering';
+import InGatheringHistory from './InGatheringHistory';
+
 const UserPage = () => {
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
+
+  if (showHistory) {
+    return <InGatheringHistory onBack={() => setShowHistory(false)} />;
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
       {/* Header */}
@@ -18,6 +29,26 @@ const UserPage = () => {
           <div className="text-center py-12">
             <h3 className="text-xl text-gray-600 mb-4">Church Management System</h3>
             <p className="text-gray-500 mb-6">Welcome to our community</p>
+          </div>
+
+          {/* In-Gathering Actions */}
+          <div className="mb-8 flex gap-4 justify-center">
+            <button
+              onClick={() => setShowAddModal(true)}
+              className="bg-orange-500 text-white px-6 py-3 rounded-lg hover:bg-orange-600 font-semibold shadow-md flex items-center gap-2"
+            >
+              <span>ADD IN-GATHERING</span>
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
+              </svg>
+            </button>
+
+            <button
+              onClick={() => setShowHistory(true)}
+              className="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 font-semibold shadow-md"
+            >
+              My In-Gathering History
+            </button>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
@@ -50,6 +81,17 @@ const UserPage = () => {
           </div>
         </div>
       </main>
+
+      {/* Add In-Gathering Modal */}
+      {showAddModal && (
+        <AddInGathering
+          onClose={() => setShowAddModal(false)}
+          onSuccess={() => {
+            setShowAddModal(false);
+            alert('In-gathering added successfully!');
+          }}
+        />
+      )}
     </div>
   );
 };

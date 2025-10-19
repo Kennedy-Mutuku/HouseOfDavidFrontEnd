@@ -2,16 +2,20 @@ import React, { useState, useEffect } from 'react';
 import {
   FiChevronDown,
   FiChevronUp,
-  FiHelpCircle,
   FiArrowUp,
   FiChevronLeft,
-  FiChevronRight
+  FiChevronRight,
+  FiDollarSign,
+  FiCheckCircle,
+  FiUsers,
+  FiHeart
 } from 'react-icons/fi';
 import { toast } from 'react-toastify';
 import { useAuth } from '../../context/AuthContext';
 import axios from 'axios';
 import GivingModal from '../../components/GivingModal';
 import MemberDetailModal from '../../components/MemberDetailModal';
+import HistoryModal from '../../components/HistoryModal';
 
 const UserDashboard = () => {
   const { user, isAuthenticated } = useAuth();
@@ -25,6 +29,12 @@ const UserDashboard = () => {
   const [showUserInfo, setShowUserInfo] = useState(false);
   const [memberData, setMemberData] = useState(null);
   const [loadingMemberData, setLoadingMemberData] = useState(false);
+  const [historyModal, setHistoryModal] = useState({
+    isOpen: false,
+    type: '',
+    data: [],
+    loading: false
+  });
 
   // Fetch member data when info button is clicked
   useEffect(() => {
@@ -93,7 +103,7 @@ const UserDashboard = () => {
       id: 'giving',
       title: 'RECORD MY GIVING',
       description: 'Track your tithes, offerings, and contributions',
-      items: ['Tithe', 'Offering', 'Special Giving']
+      items: ['Offering', 'Tithe', 'Extra Givings']
     },
     {
       id: 'attendance',
@@ -165,6 +175,108 @@ const UserDashboard = () => {
     setGivingModal({
       isOpen: false,
       type: ''
+    });
+  };
+
+  const handleHistoryClick = async (historyType) => {
+    // Check if user is authenticated
+    if (!isAuthenticated || !user) {
+      toast.error('Please log in to view your history');
+      // You can redirect to login page here if needed
+      // window.location.href = '/login';
+      return;
+    }
+
+    setHistoryModal({
+      isOpen: true,
+      type: historyType,
+      data: [],
+      loading: true
+    });
+
+    try {
+      let response;
+      let historyData = [];
+
+      switch (historyType) {
+        case 'giving':
+          // Fetch user's giving history
+          response = await axios.get('/donations/my-giving');
+          // Extract history array from response - backend returns { data: { history: [...], stats: {...} } }
+          historyData = response.data.data?.history || [];
+          // Sort by createdAt descending (latest first) - extra safety in case backend doesn't sort
+          historyData.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+          console.log('Giving history response:', response.data);
+          console.log('Extracted giving history:', historyData);
+          break;
+
+        case 'attendance':
+          // Fetch user's attendance history
+          response = await axios.get('/attendance/my-attendance');
+          // Extract history array from response - backend returns { data: { history: [...], stats: {...} } }
+          historyData = response.data.data?.history || [];
+          // Sort by createdAt descending (latest first)
+          historyData.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+          console.log('Attendance history response:', response.data);
+          console.log('Extracted attendance history:', historyData);
+          break;
+
+        case 'ingathering':
+          // Fetch user's ingathering records
+          response = await axios.get('/ingathering/my-ingathering');
+          // Extract list array from response - backend returns { data: { list: [...], stats: {...} } }
+          historyData = response.data.data?.list || [];
+          // Sort by createdAt descending (latest first)
+          historyData.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+          console.log('Ingathering history response:', response.data);
+          console.log('Extracted ingathering history:', historyData);
+          break;
+
+        case 'nurturing':
+          // Nurturing endpoint not yet implemented in backend
+          toast.info('Nurturing history feature coming soon!');
+          historyData = [];
+          break;
+
+        default:
+          historyData = [];
+      }
+
+      setHistoryModal(prev => ({
+        ...prev,
+        data: historyData,
+        loading: false
+      }));
+
+      if (historyData.length === 0 && historyType !== 'nurturing') {
+        toast.info(`You don't have any ${historyType} history yet`);
+      }
+    } catch (error) {
+      console.error(`Error fetching ${historyType} history:`, error);
+
+      // Check if error is due to authentication
+      if (error.response?.status === 401) {
+        toast.error('Your session has expired. Please log in again.');
+        // Optionally redirect to login
+        // window.location.href = '/login';
+      } else {
+        toast.error(`Failed to load ${historyType} history`);
+      }
+
+      setHistoryModal(prev => ({
+        ...prev,
+        data: [],
+        loading: false
+      }));
+    }
+  };
+
+  const closeHistoryModal = () => {
+    setHistoryModal({
+      isOpen: false,
+      type: '',
+      data: [],
+      loading: false
     });
   };
 
@@ -324,6 +436,51 @@ const UserDashboard = () => {
             ))}
           </div>
 
+          {/* History Buttons - Horizontal Row */}
+          <div className="mt-6">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3">
+              {/* My Giving History */}
+              <button
+                onClick={() => handleHistoryClick('giving')}
+                className="group bg-gradient-to-br from-green-400 to-green-600 hover:from-green-500 hover:to-green-700 text-white rounded-lg p-3 shadow-md transition-all transform hover:scale-105 hover:shadow-lg flex flex-col items-center justify-center space-y-1"
+                aria-label="My Giving History"
+              >
+                <FiDollarSign className="w-5 h-5 md:w-6 md:h-6 group-hover:scale-110 transition-transform" />
+                <span className="text-[10px] md:text-xs font-bold text-center">My Giving</span>
+              </button>
+
+              {/* My Attendance History */}
+              <button
+                onClick={() => handleHistoryClick('attendance')}
+                className="group bg-gradient-to-br from-blue-400 to-blue-600 hover:from-blue-500 hover:to-blue-700 text-white rounded-lg p-3 shadow-md transition-all transform hover:scale-105 hover:shadow-lg flex flex-col items-center justify-center space-y-1"
+                aria-label="My Attendance History"
+              >
+                <FiCheckCircle className="w-5 h-5 md:w-6 md:h-6 group-hover:scale-110 transition-transform" />
+                <span className="text-[10px] md:text-xs font-bold text-center">My Attendance</span>
+              </button>
+
+              {/* My Ingathering History */}
+              <button
+                onClick={() => handleHistoryClick('ingathering')}
+                className="group bg-gradient-to-br from-purple-400 to-purple-600 hover:from-purple-500 hover:to-purple-700 text-white rounded-lg p-3 shadow-md transition-all transform hover:scale-105 hover:shadow-lg flex flex-col items-center justify-center space-y-1"
+                aria-label="My Ingathering History"
+              >
+                <FiUsers className="w-5 h-5 md:w-6 md:h-6 group-hover:scale-110 transition-transform" />
+                <span className="text-[10px] md:text-xs font-bold text-center">My Ingathering</span>
+              </button>
+
+              {/* My Nurturing History */}
+              <button
+                onClick={() => handleHistoryClick('nurturing')}
+                className="group bg-gradient-to-br from-orange-400 to-orange-600 hover:from-orange-500 hover:to-orange-700 text-white rounded-lg p-3 shadow-md transition-all transform hover:scale-105 hover:shadow-lg flex flex-col items-center justify-center space-y-1"
+                aria-label="My Nurturing History"
+              >
+                <FiHeart className="w-5 h-5 md:w-6 md:h-6 group-hover:scale-110 transition-transform" />
+                <span className="text-[10px] md:text-xs font-bold text-center">My Nurturing</span>
+              </button>
+            </div>
+          </div>
+
           {/* Call to Action */}
           <div className="mt-10 text-center bg-gradient-to-r from-teal-100 via-cyan-50 to-orange-100 rounded-2xl p-8 border-2 border-teal-300 shadow-lg">
             <h3 className="text-2xl font-bold text-teal-700 mb-3">Ready to Get Involved?</h3>
@@ -337,15 +494,6 @@ const UserDashboard = () => {
 
       {/* Floating Action Buttons */}
       <div className="fixed bottom-6 right-6 flex flex-col space-y-3 z-50">
-        {/* Info Button - Show User Information */}
-        <button
-          onClick={handleInfoClick}
-          className="bg-cyan-400 hover:bg-cyan-500 text-white rounded-full p-4 shadow-lg transition-all transform hover:scale-110"
-          aria-label="My Information"
-        >
-          <FiHelpCircle className="w-6 h-6" />
-        </button>
-
         {/* Scroll to Top Button */}
         {showScrollTop && (
           <button
@@ -373,6 +521,15 @@ const UserDashboard = () => {
         isOpen={showUserInfo}
         onClose={handleCloseInfo}
         member={memberData}
+      />
+
+      {/* History Modal */}
+      <HistoryModal
+        isOpen={historyModal.isOpen}
+        onClose={closeHistoryModal}
+        historyType={historyModal.type}
+        historyData={historyModal.data}
+        loading={historyModal.loading}
       />
     </div>
   );

@@ -14,21 +14,58 @@ const SuperAdminDashboard = () => {
   const [givingRecords, setGivingRecords] = useState([]);
   const [givingStats, setGivingStats] = useState({
     totalAmount: 0,
-    titheTotal: 0,
     offeringTotal: 0,
-    specialGivingTotal: 0
+    titheTotal: 0,
+    extraGivingsTotal: 0
   });
   const [loadingGiving, setLoadingGiving] = useState(true);
   const [selectedMember, setSelectedMember] = useState(null);
   const [showMemberDetail, setShowMemberDetail] = useState(false);
 
-  const formatDate = (date) => {
-    if (!date) return '-';
-    return new Date(date).toLocaleDateString('en-US', {
+  const formatDate = (dateString) => {
+    if (!dateString) return '-';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-GB', {
+      timeZone: 'Africa/Nairobi',
       year: 'numeric',
       month: 'short',
       day: 'numeric'
     });
+  };
+
+  const formatDateTime = (dateString) => {
+    if (!dateString) return '-';
+    const date = new Date(dateString);
+    return date.toLocaleString('en-GB', {
+      timeZone: 'Africa/Nairobi',
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false
+    });
+  };
+
+  const handleDeleteGiving = async (recordId, donorName, amount) => {
+    if (!window.confirm(`Are you sure you want to delete this giving record?\n\nDonor: ${donorName}\nAmount: KSH ${amount}\n\nThis action cannot be undone.`)) {
+      return;
+    }
+
+    try {
+      const response = await axios.delete(`/donations/${recordId}`);
+
+      if (response.data.success) {
+        toast.success('Giving record deleted successfully');
+        // Refresh the giving records
+        fetchGivingRecords();
+      }
+    } catch (error) {
+      console.error('Error deleting giving record:', error);
+      const errorMsg = error.response?.data?.message || 'Failed to delete giving record';
+      toast.error(errorMsg);
+    }
   };
 
   const handleMemberClick = (member) => {
@@ -53,9 +90,8 @@ const SuperAdminDashboard = () => {
     );
   });
 
-  // Fetch giving records
-  useEffect(() => {
-    const fetchGivingRecords = async () => {
+  // Fetch giving records function
+  const fetchGivingRecords = async () => {
       try {
         // Check if we have a token
         const token = localStorage.getItem('token');
@@ -68,26 +104,28 @@ const SuperAdminDashboard = () => {
         const response = await axios.get('/donations');
         if (response.data.success) {
           const donations = response.data.data;
-          setGivingRecords(donations);
+          // Sort by createdAt descending (latest first)
+          const sortedDonations = donations.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+          setGivingRecords(sortedDonations);
 
           // Calculate totals
-          const tithe = donations
-            .filter(d => d.donationType === 'Tithe' && d.status === 'Completed')
-            .reduce((sum, d) => sum + d.amount, 0);
-
           const offering = donations
             .filter(d => d.donationType === 'Offering' && d.status === 'Completed')
             .reduce((sum, d) => sum + d.amount, 0);
 
-          const specialGiving = donations
-            .filter(d => d.donationType === 'Special Giving' && d.status === 'Completed')
+          const tithe = donations
+            .filter(d => d.donationType === 'Tithe' && d.status === 'Completed')
+            .reduce((sum, d) => sum + d.amount, 0);
+
+          const extraGivings = donations
+            .filter(d => d.donationType === 'Extra Givings' && d.status === 'Completed')
             .reduce((sum, d) => sum + d.amount, 0);
 
           setGivingStats({
-            totalAmount: tithe + offering + specialGiving,
-            titheTotal: tithe,
+            totalAmount: offering + tithe + extraGivings,
             offeringTotal: offering,
-            specialGivingTotal: specialGiving
+            titheTotal: tithe,
+            extraGivingsTotal: extraGivings
           });
         }
       } catch (error) {
@@ -102,8 +140,10 @@ const SuperAdminDashboard = () => {
       } finally {
         setLoadingGiving(false);
       }
-    };
+  };
 
+  // Fetch giving records on mount
+  useEffect(() => {
     fetchGivingRecords();
   }, []);
 
@@ -270,17 +310,17 @@ const SuperAdminDashboard = () => {
             <h3 className="text-sm font-semibold opacity-90 uppercase tracking-wide">Total Giving</h3>
             <p className="text-3xl font-bold mt-2">KSH {givingStats.totalAmount.toLocaleString()}</p>
           </div>
-          <div className="bg-gradient-to-br from-green-500 to-green-700 rounded-lg shadow-lg p-6 text-white">
-            <h3 className="text-sm font-semibold opacity-90 uppercase tracking-wide">Tithe</h3>
-            <p className="text-3xl font-bold mt-2">KSH {givingStats.titheTotal.toLocaleString()}</p>
-          </div>
           <div className="bg-gradient-to-br from-blue-500 to-blue-700 rounded-lg shadow-lg p-6 text-white">
             <h3 className="text-sm font-semibold opacity-90 uppercase tracking-wide">Offering</h3>
             <p className="text-3xl font-bold mt-2">KSH {givingStats.offeringTotal.toLocaleString()}</p>
           </div>
+          <div className="bg-gradient-to-br from-green-500 to-green-700 rounded-lg shadow-lg p-6 text-white">
+            <h3 className="text-sm font-semibold opacity-90 uppercase tracking-wide">Tithe</h3>
+            <p className="text-3xl font-bold mt-2">KSH {givingStats.titheTotal.toLocaleString()}</p>
+          </div>
           <div className="bg-gradient-to-br from-orange-500 to-orange-700 rounded-lg shadow-lg p-6 text-white">
-            <h3 className="text-sm font-semibold opacity-90 uppercase tracking-wide">Special Giving</h3>
-            <p className="text-3xl font-bold mt-2">KSH {givingStats.specialGivingTotal.toLocaleString()}</p>
+            <h3 className="text-sm font-semibold opacity-90 uppercase tracking-wide">Extra Givings</h3>
+            <p className="text-3xl font-bold mt-2">KSH {givingStats.extraGivingsTotal.toLocaleString()}</p>
           </div>
         </div>
 
@@ -309,7 +349,7 @@ const SuperAdminDashboard = () => {
                 <thead className="bg-purple-100">
                   <tr>
                     <th className="px-4 py-3 text-left text-xs font-bold text-purple-900 uppercase tracking-wider">
-                      Date
+                      Date & Time
                     </th>
                     <th className="px-4 py-3 text-left text-xs font-bold text-purple-900 uppercase tracking-wider">
                       Member
@@ -326,6 +366,9 @@ const SuperAdminDashboard = () => {
                     <th className="px-4 py-3 text-left text-xs font-bold text-purple-900 uppercase tracking-wider">
                       Status
                     </th>
+                    <th className="px-4 py-3 text-left text-xs font-bold text-purple-900 uppercase tracking-wider">
+                      Actions
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
@@ -336,7 +379,7 @@ const SuperAdminDashboard = () => {
                     >
                       <td className="px-4 py-3 whitespace-nowrap">
                         <div className="text-sm text-gray-900">
-                          {new Date(record.date).toLocaleDateString()}
+                          {formatDateTime(record.createdAt)}
                         </div>
                       </td>
                       <td className="px-4 py-3">
@@ -377,6 +420,18 @@ const SuperAdminDashboard = () => {
                         }`}>
                           {record.status}
                         </span>
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        <button
+                          onClick={() => handleDeleteGiving(
+                            record._id,
+                            record.donor?.fullName || record.createdBy?.fullName || 'Anonymous',
+                            record.amount.toLocaleString()
+                          )}
+                          className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-md text-xs font-semibold transition-colors"
+                        >
+                          Delete
+                        </button>
                       </td>
                     </tr>
                   ))}
