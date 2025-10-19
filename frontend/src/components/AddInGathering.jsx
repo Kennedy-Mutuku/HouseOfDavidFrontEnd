@@ -2,8 +2,7 @@ import { useState } from 'react';
 
 const AddInGathering = ({ onClose, onSuccess }) => {
   const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
+    fullName: '',
     phone: '',
     notes: ''
   });
@@ -42,7 +41,7 @@ const AddInGathering = ({ onClose, onSuccess }) => {
         throw new Error(data.message || 'Failed to add in-gathering');
       }
 
-      setFormData({ firstName: '', lastName: '', phone: '', notes: '' });
+      setFormData({ fullName: '', phone: '', notes: '' });
       if (onSuccess) onSuccess();
       if (onClose) onClose();
     } catch (err) {
@@ -75,31 +74,16 @@ const AddInGathering = ({ onClose, onSuccess }) => {
           <div className="space-y-4">
             <div>
               <label className="block text-gray-700 font-medium mb-2">
-                First Name *
+                Full Name *
               </label>
               <input
                 type="text"
-                name="firstName"
-                value={formData.firstName}
+                name="fullName"
+                value={formData.fullName}
                 onChange={handleChange}
                 required
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
-                placeholder="Enter first name"
-              />
-            </div>
-
-            <div>
-              <label className="block text-gray-700 font-medium mb-2">
-                Last Name *
-              </label>
-              <input
-                type="text"
-                name="lastName"
-                value={formData.lastName}
-                onChange={handleChange}
-                required
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
-                placeholder="Enter last name"
+                placeholder="Enter visitor's full name"
               />
             </div>
 

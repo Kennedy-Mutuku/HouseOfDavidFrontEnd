@@ -110,9 +110,9 @@ const HistoryModal = ({ isOpen, onClose, historyType, historyData, loading }) =>
     <div className="border-l-4 border-purple-500 pl-3">
       <div>
         <p className="font-semibold text-sm text-gray-800">
-          {item.firstName} {item.lastName}
+          {item.fullName || `${item.firstName} ${item.lastName}`}
         </p>
-        <p className="text-xs text-gray-600">{formatDate(item.createdAt)}</p>
+        <p className="text-xs text-gray-600">{formatDate(item.invitedDate || item.createdAt)}</p>
         {item.phone && (
           <p className="text-[10px] text-gray-500">Phone: {item.phone}</p>
         )}

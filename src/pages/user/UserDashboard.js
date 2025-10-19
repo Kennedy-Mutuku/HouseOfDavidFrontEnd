@@ -16,6 +16,7 @@ import axios from 'axios';
 import GivingModal from '../../components/GivingModal';
 import MemberDetailModal from '../../components/MemberDetailModal';
 import HistoryModal from '../../components/HistoryModal';
+import InGatheringModal from '../../components/InGatheringModal';
 
 const UserDashboard = () => {
   const { user, isAuthenticated } = useAuth();
@@ -26,6 +27,7 @@ const UserDashboard = () => {
     isOpen: false,
     type: ''
   });
+  const [inGatheringModal, setInGatheringModal] = useState(false);
   const [showUserInfo, setShowUserInfo] = useState(false);
   const [memberData, setMemberData] = useState(null);
   const [loadingMemberData, setLoadingMemberData] = useState(false);
@@ -176,6 +178,14 @@ const UserDashboard = () => {
       isOpen: false,
       type: ''
     });
+  };
+
+  const handleInGatheringClick = () => {
+    setInGatheringModal(true);
+  };
+
+  const closeInGatheringModal = () => {
+    setInGatheringModal(false);
   };
 
   const handleHistoryClick = async (historyType) => {
@@ -401,12 +411,14 @@ const UserDashboard = () => {
             {sections.map((section, idx) => (
               <div key={section.id} className="overflow-hidden rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300">
                 <button
-                  onClick={() => toggleSection(section.id)}
+                  onClick={() => section.id === 'ingathering' ? handleInGatheringClick() : toggleSection(section.id)}
                   className="w-full bg-gradient-to-r from-orange-500 via-orange-600 to-amber-600 hover:from-orange-600 hover:via-orange-700 hover:to-amber-700 text-white px-6 md:px-8 py-3 flex items-center justify-between transition-all duration-300 group shadow-lg"
                 >
                   <span className="font-bold text-sm md:text-base tracking-wide">{section.title}</span>
                   <div>
-                    {expandedSections[section.id] ? (
+                    {section.id === 'ingathering' ? (
+                      <FiChevronRight className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                    ) : expandedSections[section.id] ? (
                       <FiChevronUp className="w-5 h-5 group-hover:scale-110 transition-transform" />
                     ) : (
                       <FiChevronDown className="w-5 h-5 group-hover:scale-110 transition-transform" />
@@ -414,7 +426,7 @@ const UserDashboard = () => {
                   </div>
                 </button>
 
-                {expandedSections[section.id] && (
+                {expandedSections[section.id] && section.id !== 'ingathering' && (
                   <div className="bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50 px-6 md:px-8 py-6 border-x-4 border-b-4 border-orange-500/30 animate-fade-in">
                     <ul className="grid grid-cols-1 md:grid-cols-2 gap-3">
                       {section.items.map((item, index) => (
@@ -513,6 +525,15 @@ const UserDashboard = () => {
         givingType={givingModal.type}
         onSuccess={() => {
           toast.success('Thank you for your contribution!');
+        }}
+      />
+
+      {/* InGathering Modal */}
+      <InGatheringModal
+        isOpen={inGatheringModal}
+        onClose={closeInGatheringModal}
+        onSuccess={() => {
+          toast.success('Visitor added successfully!');
         }}
       />
 

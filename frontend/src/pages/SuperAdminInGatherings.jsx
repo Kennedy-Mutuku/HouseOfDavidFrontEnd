@@ -161,7 +161,7 @@ const SuperAdminInGatherings = ({ onBack }) => {
                         <tr key={gathering._id} className="hover:bg-gray-50">
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="text-sm font-medium text-gray-900">
-                              {gathering.firstName} {gathering.lastName}
+                              {gathering.fullName || `${gathering.firstName} ${gathering.lastName}`}
                             </div>
                             {gathering.email && (
                               <div className="text-xs text-gray-500">{gathering.email}</div>
