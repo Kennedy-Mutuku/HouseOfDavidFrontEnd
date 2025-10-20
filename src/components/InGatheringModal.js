@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { FiX, FiUser, FiPhone, FiMessageSquare } from 'react-icons/fi';
-import axios from 'axios';
+import axios from '../utils/axios';
 import { toast } from 'react-toastify';
 
 const InGatheringModal = ({ isOpen, onClose, onSuccess }) => {
@@ -33,8 +33,8 @@ const InGatheringModal = ({ isOpen, onClose, onSuccess }) => {
       const response = await axios.post('/ingathering', {
         fullName: formData.fullName.trim(),
         phone: formData.phone.trim(),
-        notes: formData.notes.trim(),
-        invitedDate: new Date().toISOString()
+        notes: formData.notes.trim()
+        // invitedDate will be set automatically by backend to current time
       });
 
       if (response.data.success) {

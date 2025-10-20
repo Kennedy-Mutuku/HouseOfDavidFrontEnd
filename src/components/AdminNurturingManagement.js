@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { FiX, FiCheck, FiTrash2, FiHeart, FiClock, FiCheckCircle } from 'react-icons/fi';
-import axios from 'axios';
+import axios from '../utils/axios';
 import { toast } from 'react-toastify';
 
 const AdminNurturingManagement = ({ isOpen, onClose }) => {

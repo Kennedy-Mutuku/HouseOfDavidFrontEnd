@@ -1,5 +1,5 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
-import axios from 'axios';
+import axios from '../utils/axios';
 import { toast } from 'react-toastify';
 
 const AuthContext = createContext();
@@ -16,10 +16,6 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Configure axios defaults
-  const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
-  axios.defaults.baseURL = API_URL;
-
   useEffect(() => {
     // Check if user is logged in
     const token = localStorage.getItem('token');
@@ -27,7 +23,6 @@ export const AuthProvider = ({ children }) => {
 
     if (token && userData) {
       setUser(JSON.parse(userData));
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
     }
     setLoading(false);
   }, []);
@@ -53,9 +48,6 @@ export const AuthProvider = ({ children }) => {
         localStorage.setItem('token', token);
         localStorage.setItem('user', JSON.stringify(userData));
 
-        // Set axios header
-        axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-
         // Set user state
         setUser(userData);
 
@@ -72,7 +64,6 @@ export const AuthProvider = ({ children }) => {
   const logout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
-    delete axios.defaults.headers.common['Authorization'];
     setUser(null);
     toast.info('Logged out successfully');
   };

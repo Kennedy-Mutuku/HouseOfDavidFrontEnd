@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { FiX, FiUser, FiMail, FiPhone, FiCalendar, FiMapPin, FiUsers, FiHeart, FiBriefcase, FiAlertCircle } from 'react-icons/fi';
 import { useAuth } from '../context/AuthContext';
-import axios from 'axios';
+import axios from '../utils/axios';
 
 const UserInfoModal = ({ isOpen, onClose }) => {
   const { user } = useAuth();

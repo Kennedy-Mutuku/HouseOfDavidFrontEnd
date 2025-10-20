@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useMemberContext } from '../context/MemberContext';
-import axios from 'axios';
+import axios from '../utils/axios';
 import {
   FiHome,
   FiDollarSign,

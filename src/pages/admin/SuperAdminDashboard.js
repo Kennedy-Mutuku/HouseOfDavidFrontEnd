@@ -2,12 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useMemberContext } from '../../context/MemberContext';
 import { useAuth } from '../../context/AuthContext';
-import axios from 'axios';
+import axios from '../../utils/axios';
 import { toast } from 'react-toastify';
 import UniformHeader from '../../components/UniformHeader';
-import MemberDetailModal from '../../components/MemberDetailModal';
+import EnhancedMemberDetailModal from '../../components/EnhancedMemberDetailModal';
 import AdminInGatheringManagement from '../../components/AdminInGatheringManagement';
 import AdminNurturingManagement from '../../components/AdminNurturingManagement';
+import AttendanceSessionManager from '../../components/AttendanceSessionManager';
 
 const SuperAdminDashboard = () => {
   const { members } = useMemberContext();
@@ -25,6 +26,7 @@ const SuperAdminDashboard = () => {
   const [showMemberDetail, setShowMemberDetail] = useState(false);
   const [showInGatheringManagement, setShowInGatheringManagement] = useState(false);
   const [showNurturingManagement, setShowNurturingManagement] = useState(false);
+  const [showAttendanceManager, setShowAttendanceManager] = useState(false);
 
   const formatDate = (dateString) => {
     if (!dateString) return '-';
@@ -208,6 +210,17 @@ const SuperAdminDashboard = () => {
               <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" />
             </svg>
             Manage Nurturing
+          </button>
+
+          <button
+            onClick={() => setShowAttendanceManager(true)}
+            className="flex items-center gap-2 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white px-6 py-3 rounded-lg font-semibold shadow-lg transition-all transform hover:scale-105"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+              <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" />
+              <path fillRule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm9.707 5.707a1 1 0 00-1.414-1.414L9 12.586l-1.293-1.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+            </svg>
+            Manage Attendance Sessions
           </button>
         </div>
 
@@ -506,8 +519,8 @@ const SuperAdminDashboard = () => {
         </div>
       </div>
 
-      {/* Member Detail Modal */}
-      <MemberDetailModal
+      {/* Enhanced Member Detail Modal */}
+      <EnhancedMemberDetailModal
         isOpen={showMemberDetail}
         onClose={handleCloseDetail}
         member={selectedMember}
@@ -523,6 +536,12 @@ const SuperAdminDashboard = () => {
       <AdminNurturingManagement
         isOpen={showNurturingManagement}
         onClose={() => setShowNurturingManagement(false)}
+      />
+
+      {/* Attendance Session Manager Modal */}
+      <AttendanceSessionManager
+        isOpen={showAttendanceManager}
+        onClose={() => setShowAttendanceManager(false)}
       />
     </div>
   );

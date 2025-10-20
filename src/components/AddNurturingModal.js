@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { FiX, FiUser, FiPhone, FiCalendar, FiMessageSquare } from 'react-icons/fi';
-import axios from 'axios';
+import axios from '../utils/axios';
 import { toast } from 'react-toastify';
 
 const AddNurturingModal = ({ isOpen, onClose, onSuccess }) => {
@@ -31,10 +31,13 @@ const AddNurturingModal = ({ isOpen, onClose, onSuccess }) => {
     setIsSubmitting(true);
 
     try {
+      // Combine the date with current time to get accurate timestamp
+      const startDateTime = new Date(formData.startDate + 'T' + new Date().toTimeString().split(' ')[0]);
+
       const response = await axios.post('/nurturing', {
         fullName: formData.fullName.trim(),
         phone: formData.phone.trim(),
-        startDate: formData.startDate,
+        startDate: startDateTime.toISOString(),
         notes: formData.notes.trim()
       });
 

@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { FiMenu, FiX, FiEye, FiEyeOff, FiEdit2 } from 'react-icons/fi';
 import { useMemberContext } from '../context/MemberContext';
-import axios from 'axios';
+import axios from '../utils/axios';
 
 const UniformHeader = ({ showMobileMenu = false }) => {
   const navigate = useNavigate();

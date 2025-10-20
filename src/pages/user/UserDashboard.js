@@ -6,18 +6,18 @@ import {
   FiChevronLeft,
   FiChevronRight,
   FiDollarSign,
-  FiCheckCircle,
   FiUsers,
   FiHeart
 } from 'react-icons/fi';
 import { toast } from 'react-toastify';
 import { useAuth } from '../../context/AuthContext';
-import axios from 'axios';
+import axios from '../../utils/axios';
 import GivingModal from '../../components/GivingModal';
 import MemberDetailModal from '../../components/MemberDetailModal';
 import HistoryModal from '../../components/HistoryModal';
 import InGatheringModal from '../../components/InGatheringModal';
 import AddNurturingModal from '../../components/AddNurturingModal';
+import SignAttendance from '../../components/SignAttendance';
 
 const UserDashboard = () => {
   const { user, isAuthenticated } = useAuth();
@@ -108,12 +108,6 @@ const UserDashboard = () => {
       title: 'RECORD MY GIVING',
       description: 'Track your tithes, offerings, and contributions',
       items: ['Offering', 'Tithe', 'Extra Givings']
-    },
-    {
-      id: 'attendance',
-      title: 'SIGN ATTENDANCE',
-      description: 'Mark your presence at services and events',
-      items: ['Sunday Service', 'Midweek Service', 'Prayer Meeting', 'Special Events']
     },
     {
       id: 'ingathering',
@@ -228,17 +222,6 @@ const UserDashboard = () => {
           historyData.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
           console.log('Giving history response:', response.data);
           console.log('Extracted giving history:', historyData);
-          break;
-
-        case 'attendance':
-          // Fetch user's attendance history
-          response = await axios.get('/attendance/my-attendance');
-          // Extract history array from response - backend returns { data: { history: [...], stats: {...} } }
-          historyData = response.data.data?.history || [];
-          // Sort by createdAt descending (latest first)
-          historyData.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-          console.log('Attendance history response:', response.data);
-          console.log('Extracted attendance history:', historyData);
           break;
 
         case 'ingathering':
@@ -471,47 +454,41 @@ const UserDashboard = () => {
             ))}
           </div>
 
-          {/* History Buttons - Horizontal Row */}
-          <div className="mt-6">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3">
-              {/* My Giving History */}
-              <button
-                onClick={() => handleHistoryClick('giving')}
-                className="group bg-gradient-to-br from-green-400 to-green-600 hover:from-green-500 hover:to-green-700 text-white rounded-lg p-3 shadow-md transition-all transform hover:scale-105 hover:shadow-lg flex flex-col items-center justify-center space-y-1"
-                aria-label="My Giving History"
-              >
-                <FiDollarSign className="w-5 h-5 md:w-6 md:h-6 group-hover:scale-110 transition-transform" />
-                <span className="text-[10px] md:text-xs font-bold text-center">My Giving</span>
-              </button>
+          {/* History Buttons */}
+          <div className="mt-6 space-y-3">
+            {/* My Giving History - Full Width */}
+            <button
+              onClick={() => handleHistoryClick('giving')}
+              className="w-full group bg-gradient-to-br from-green-400 to-green-600 hover:from-green-500 hover:to-green-700 text-white rounded-lg p-4 shadow-md transition-all transform hover:scale-105 hover:shadow-lg flex flex-col items-center justify-center space-y-1"
+              aria-label="My Giving History"
+            >
+              <FiDollarSign className="w-6 h-6 md:w-7 md:h-7 group-hover:scale-110 transition-transform" />
+              <span className="text-sm md:text-base font-bold text-center">My Giving History</span>
+            </button>
 
-              {/* My Attendance History */}
-              <button
-                onClick={() => handleHistoryClick('attendance')}
-                className="group bg-gradient-to-br from-blue-400 to-blue-600 hover:from-blue-500 hover:to-blue-700 text-white rounded-lg p-3 shadow-md transition-all transform hover:scale-105 hover:shadow-lg flex flex-col items-center justify-center space-y-1"
-                aria-label="My Attendance History"
-              >
-                <FiCheckCircle className="w-5 h-5 md:w-6 md:h-6 group-hover:scale-110 transition-transform" />
-                <span className="text-[10px] md:text-xs font-bold text-center">My Attendance</span>
-              </button>
+            {/* Sign Attendance Component */}
+            <SignAttendance />
 
+            {/* My Ingathering and My Nurturing - Side by Side */}
+            <div className="grid grid-cols-2 gap-3">
               {/* My Ingathering History */}
               <button
                 onClick={() => handleHistoryClick('ingathering')}
-                className="group bg-gradient-to-br from-purple-400 to-purple-600 hover:from-purple-500 hover:to-purple-700 text-white rounded-lg p-3 shadow-md transition-all transform hover:scale-105 hover:shadow-lg flex flex-col items-center justify-center space-y-1"
+                className="group bg-gradient-to-br from-purple-400 to-purple-600 hover:from-purple-500 hover:to-purple-700 text-white rounded-lg p-4 shadow-md transition-all transform hover:scale-105 hover:shadow-lg flex flex-col items-center justify-center space-y-1"
                 aria-label="My Ingathering History"
               >
                 <FiUsers className="w-5 h-5 md:w-6 md:h-6 group-hover:scale-110 transition-transform" />
-                <span className="text-[10px] md:text-xs font-bold text-center">My Ingathering</span>
+                <span className="text-[10px] md:text-xs font-bold text-center">My Ingathering History</span>
               </button>
 
               {/* My Nurturing History */}
               <button
                 onClick={() => handleHistoryClick('nurturing')}
-                className="group bg-gradient-to-br from-orange-400 to-orange-600 hover:from-orange-500 hover:to-orange-700 text-white rounded-lg p-3 shadow-md transition-all transform hover:scale-105 hover:shadow-lg flex flex-col items-center justify-center space-y-1"
+                className="group bg-gradient-to-br from-orange-400 to-orange-600 hover:from-orange-500 hover:to-orange-700 text-white rounded-lg p-4 shadow-md transition-all transform hover:scale-105 hover:shadow-lg flex flex-col items-center justify-center space-y-1"
                 aria-label="My Nurturing History"
               >
                 <FiHeart className="w-5 h-5 md:w-6 md:h-6 group-hover:scale-110 transition-transform" />
-                <span className="text-[10px] md:text-xs font-bold text-center">My Nurturing</span>
+                <span className="text-[10px] md:text-xs font-bold text-center">My Nurturing History</span>
               </button>
             </div>
           </div>
