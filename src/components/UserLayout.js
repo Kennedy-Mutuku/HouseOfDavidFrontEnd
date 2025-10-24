@@ -191,7 +191,7 @@ const UserLayout = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Professional Header */}
-      <header className="bg-gradient-to-r from-purple-800 via-purple-700 to-purple-900 shadow-2xl sticky top-0 z-50 border-b-2 border-gold-400/30">
+      <header className="bg-gradient-to-r from-purple-800 via-purple-700 to-purple-900 sticky top-0 z-50 border-b-2 border-gold-400/30">
         <div className="mx-auto px-4 sm:px-6 lg:px-12 xl:px-16 2xl:px-20">
           <div className="flex items-center justify-between h-20 lg:h-24 w-full">
             {/* Logo - Far Left on Mobile */}
@@ -206,12 +206,12 @@ const UserLayout = () => {
               </div>
             </div>
 
-            {/* Text - Center on Mobile, Left on Desktop */}
-            <div className="absolute left-1/2 -translate-x-1/2 lg:relative lg:left-0 lg:translate-x-0 lg:flex-none">
-              <h1 className="text-base sm:text-xl md:text-2xl lg:text-4xl font-extrabold text-white tracking-tight leading-none whitespace-nowrap lg:tracking-wide text-center lg:text-left">
+            {/* Text - Centered on All Screen Sizes */}
+            <div className="absolute left-1/2 -translate-x-1/2">
+              <h1 className="text-base sm:text-xl md:text-2xl lg:text-4xl font-extrabold text-white tracking-tight leading-none whitespace-nowrap lg:tracking-wide text-center">
                 HOUSE OF DAVID
               </h1>
-              <p className="text-[10px] sm:text-xs lg:text-sm text-cyan-300 uppercase tracking-wide lg:tracking-widest font-semibold mt-0.5 lg:mt-1 whitespace-nowrap text-center lg:text-left">
+              <p className="text-[10px] sm:text-xs lg:text-sm text-cyan-300 uppercase tracking-wide lg:tracking-widest font-semibold mt-0.5 lg:mt-1 whitespace-nowrap text-center">
                 Journey to the Finish
               </p>
             </div>
@@ -600,7 +600,7 @@ const UserLayout = () => {
       {/* Footer */}
       <footer className="bg-gradient-to-r from-purple-900 via-purple-800 to-purple-900 text-white mt-12 border-t-4 border-gold-400">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center md:text-left">
             {/* About Section */}
             <div>
               <h3 className="text-lg font-bold text-gold-400 mb-3">House of David</h3>

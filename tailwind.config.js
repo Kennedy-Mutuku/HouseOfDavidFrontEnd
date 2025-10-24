@@ -6,41 +6,48 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        primary: {
-          50: '#eff6ff',
-          100: '#dbeafe',
-          200: '#bfdbfe',
-          300: '#93c5fd',
-          400: '#60a5fa',
-          500: '#1e40af',
-          600: '#1e3a8a',
-          700: '#1e3a8a',
-          800: '#1e3a8a',
-          900: '#172554',
+        // Black & White Foundation
+        black: {
+          DEFAULT: '#1A1A1A',
+          soft: '#2C2C2C',
         },
+        gray: {
+          50: '#FAFAFA',
+          100: '#F5F5F5',
+          200: '#E5E5E5',
+          300: '#D4D4D4',
+          400: '#A1A1AA',
+          500: '#71717A',
+          600: '#52525B',
+          700: '#404040',
+          800: '#2C2C2C',
+          900: '#1A1A1A',
+        },
+        // Brand Accent: Purple
+        purple: {
+          50: '#F5F3FF',
+          100: '#EDE9FE',
+          200: '#DDD6FE',
+          300: '#C4B5FD',
+          400: '#A78BFA',
+          500: '#8B4CB1', // Light purple
+          600: '#6B2C91', // Primary brand purple
+          700: '#4A1D66', // Dark purple
+          800: '#3A1552',
+          900: '#2A0F3D',
+        },
+        // Brand Accent: Gold
         gold: {
-          50: '#fefce8',
-          100: '#fef9c3',
-          200: '#fef08a',
-          300: '#fde047',
-          400: '#facc15',
-          500: '#eab308',
-          600: '#ca8a04',
-          700: '#a16207',
-          800: '#854d0e',
-          900: '#713f12',
-        },
-        burgundy: {
-          50: '#fdf2f8',
-          100: '#fce7f3',
-          200: '#fbcfe8',
-          300: '#f9a8d4',
-          400: '#f472b6',
-          500: '#7c2d12',
-          600: '#881337',
-          700: '#701a32',
-          800: '#5c1728',
-          900: '#4a1220',
+          50: '#FFFBEB',
+          100: '#FEF3C7',
+          200: '#FDE68A',
+          300: '#FCD34D',
+          400: '#FBBF24',
+          500: '#D4AF37', // Primary brand gold
+          600: '#C89B3C',
+          700: '#B8941F',
+          800: '#A07C1A',
+          900: '#856515',
         },
       },
       animation: {
