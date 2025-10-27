@@ -68,7 +68,7 @@ const ManageMembers = () => {
               </div>
               <button
                 onClick={handleRefresh}
-                className="bg-blue-500 hover:bg-blue-600 text-white font-semibold px-6 py-3 rounded-xl transition-all shadow-lg hover:shadow-xl flex items-center gap-2"
+                className="bg-purple-600 hover:bg-purple-700 text-white font-semibold px-6 py-3 rounded-xl transition-all shadow-lg hover:shadow-xl flex items-center gap-2"
               >
                 <FiRefreshCw className="w-5 h-5" />
                 Refresh
@@ -76,8 +76,8 @@ const ManageMembers = () => {
             </div>
 
             {/* Total Members Count */}
-            <div className="bg-yellow-100 border-l-4 border-yellow-500 p-4 rounded mb-6">
-              <p className="text-yellow-800 font-semibold flex items-center gap-2">
+            <div className="bg-gold-100 border-l-4 border-gold-500 p-4 rounded mb-6">
+              <p className="text-gold-800 font-semibold flex items-center gap-2">
                 📊 Total Users: {filteredMembers.length}
               </p>
             </div>
@@ -139,15 +139,15 @@ const ManageMembers = () => {
                   </div>
 
                   {/* ID Number */}
-                  <div className="flex items-start gap-3 bg-blue-50 p-3 rounded-lg border border-blue-200">
+                  <div className="flex items-start gap-3 bg-purple-50 p-3 rounded-lg border border-purple-200">
                     <div className="w-full">
                       <p className="text-sm text-gray-600 font-semibold mb-1">Login Credentials:</p>
                       <div className="space-y-1">
                         <p className="text-gray-900 font-medium">
-                          <span className="text-gray-600 text-sm">Username (Email):</span> <span className="text-blue-600">{member.email}</span>
+                          <span className="text-gray-600 text-sm">Username (Email):</span> <span className="text-purple-600">{member.email}</span>
                         </p>
                         <p className="text-gray-900 font-medium">
-                          <span className="text-gray-600 text-sm">Password (ID No):</span> <span className="text-green-700 font-bold">{member.idNo || member.idNumber || member.id_no || 'Not set - Please re-add member'}</span>
+                          <span className="text-gray-600 text-sm">Password (ID No):</span> <span className="text-gold-700 font-bold">{member.idNo || member.idNumber || member.id_no || 'Not set - Please re-add member'}</span>
                         </p>
                       </div>
                     </div>
@@ -204,7 +204,7 @@ const ManageMembers = () => {
                   {/* Password Section */}
                   <div className="flex items-center justify-between pt-4 border-t border-gray-200">
                     <div className="flex items-center gap-2">
-                      <span className="bg-green-100 text-green-700 px-4 py-2 rounded-lg text-sm font-semibold">
+                      <span className="bg-purple-100 text-purple-700 px-4 py-2 rounded-lg text-sm font-semibold">
                         Default Password: {member.idNo}
                       </span>
                       {resetSuccess === member.email && (
@@ -216,7 +216,7 @@ const ManageMembers = () => {
                     <div className="flex gap-2">
                       <button
                         onClick={() => setSelectedMember(member)}
-                        className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-2 rounded-lg transition-all shadow-md hover:shadow-lg flex items-center gap-2"
+                        className="bg-purple-600 hover:bg-purple-700 text-white font-semibold px-6 py-2 rounded-lg transition-all shadow-md hover:shadow-lg flex items-center gap-2"
                       >
                         <FiEye className="w-4 h-4" />
                         View Details
@@ -248,7 +248,7 @@ const ManageMembers = () => {
           <div className="mt-8 text-center">
             <button
               onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-              className="bg-cyan-400 hover:bg-cyan-500 text-white font-bold px-8 py-3 rounded-full transition-all shadow-lg hover:shadow-xl"
+              className="bg-purple-600 hover:bg-purple-700 text-white font-bold px-8 py-3 rounded-full transition-all shadow-lg hover:shadow-xl"
             >
               ↑ Back to Top
             </button>

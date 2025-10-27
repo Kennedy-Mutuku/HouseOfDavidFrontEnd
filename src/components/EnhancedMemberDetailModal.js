@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { FiX, FiUser, FiMail, FiPhone, FiCalendar, FiMapPin, FiUsers, FiHeart, FiBriefcase, FiAlertCircle, FiDollarSign, FiCheckCircle } from 'react-icons/fi';
 import axios from '../utils/axios';
+import MemberAnalytics from './MemberAnalytics';
 
 const EnhancedMemberDetailModal = ({ isOpen, onClose, member }) => {
   const [activityData, setActivityData] = useState({
@@ -204,6 +205,13 @@ const EnhancedMemberDetailModal = ({ isOpen, onClose, member }) => {
                 </div>
               </div>
             </div>
+
+            {/* Member Analytics Charts */}
+            {member._id && (
+              <div className="mt-6">
+                <MemberAnalytics memberId={member._id} />
+              </div>
+            )}
 
             {/* Detailed Activity Sections */}
             {activityData.loading ? (

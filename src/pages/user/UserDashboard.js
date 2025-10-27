@@ -18,6 +18,7 @@ import HistoryModal from '../../components/HistoryModal';
 import InGatheringModal from '../../components/InGatheringModal';
 import AddNurturingModal from '../../components/AddNurturingModal';
 import SignAttendance from '../../components/SignAttendance';
+import UserAnalytics from '../../components/UserAnalytics';
 
 const UserDashboard = () => {
   const { user, isAuthenticated } = useAuth();
@@ -481,6 +482,11 @@ const UserDashboard = () => {
                 <span className="text-[10px] md:text-xs font-bold text-center">My Nurturing History</span>
               </button>
             </div>
+          </div>
+
+          {/* User Analytics Section */}
+          <div className="mt-8">
+            <UserAnalytics />
           </div>
 
           {/* Call to Action */}

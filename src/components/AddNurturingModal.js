@@ -76,7 +76,7 @@ const AddNurturingModal = ({ isOpen, onClose, onSuccess }) => {
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden animate-fade-in">
         {/* Header */}
-        <div className="bg-gradient-to-r from-orange-500 via-orange-600 to-amber-600 text-white px-6 py-4 flex items-center justify-between">
+        <div className="bg-purple-600 text-white px-6 py-4 flex items-center justify-between">
           <h2 className="text-xl md:text-2xl font-bold">ADD NURTURING</h2>
           <button
             onClick={handleClose}
@@ -96,7 +96,7 @@ const AddNurturingModal = ({ isOpen, onClose, onSuccess }) => {
           {/* Full Name Field */}
           <div>
             <label htmlFor="fullName" className="block text-gray-700 font-semibold mb-2 flex items-center">
-              <FiUser className="mr-2 text-orange-500" />
+              <FiUser className="mr-2 text-purple-600" />
               Full Name *
             </label>
             <input
@@ -106,7 +106,7 @@ const AddNurturingModal = ({ isOpen, onClose, onSuccess }) => {
               value={formData.fullName}
               onChange={handleChange}
               required
-              className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-orange-500 transition-colors"
+              className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-purple-500 transition-colors"
               placeholder="Enter member's full name"
             />
           </div>
@@ -114,7 +114,7 @@ const AddNurturingModal = ({ isOpen, onClose, onSuccess }) => {
           {/* Phone Number Field */}
           <div>
             <label htmlFor="phone" className="block text-gray-700 font-semibold mb-2 flex items-center">
-              <FiPhone className="mr-2 text-orange-500" />
+              <FiPhone className="mr-2 text-purple-600" />
               Phone Number *
             </label>
             <input
@@ -124,7 +124,7 @@ const AddNurturingModal = ({ isOpen, onClose, onSuccess }) => {
               value={formData.phone}
               onChange={handleChange}
               required
-              className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-orange-500 transition-colors"
+              className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-purple-500 transition-colors"
               placeholder="Enter phone number"
             />
           </div>
@@ -132,7 +132,7 @@ const AddNurturingModal = ({ isOpen, onClose, onSuccess }) => {
           {/* Start Date Field */}
           <div>
             <label htmlFor="startDate" className="block text-gray-700 font-semibold mb-2 flex items-center">
-              <FiCalendar className="mr-2 text-orange-500" />
+              <FiCalendar className="mr-2 text-purple-600" />
               Start Date *
             </label>
             <input
@@ -142,14 +142,14 @@ const AddNurturingModal = ({ isOpen, onClose, onSuccess }) => {
               value={formData.startDate}
               onChange={handleChange}
               required
-              className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-orange-500 transition-colors"
+              className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-purple-500 transition-colors"
             />
           </div>
 
           {/* Notes Field */}
           <div>
             <label htmlFor="notes" className="block text-gray-700 font-semibold mb-2 flex items-center">
-              <FiMessageSquare className="mr-2 text-orange-500" />
+              <FiMessageSquare className="mr-2 text-purple-600" />
               Notes
             </label>
             <textarea
@@ -158,7 +158,7 @@ const AddNurturingModal = ({ isOpen, onClose, onSuccess }) => {
               value={formData.notes}
               onChange={handleChange}
               rows="3"
-              className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-orange-500 transition-colors resize-none"
+              className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-purple-500 transition-colors resize-none"
               placeholder="Add any notes (optional)"
             />
           </div>
@@ -175,7 +175,7 @@ const AddNurturingModal = ({ isOpen, onClose, onSuccess }) => {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="flex-1 px-6 py-3 bg-gradient-to-r from-orange-500 to-amber-600 text-white rounded-lg font-semibold hover:from-orange-600 hover:to-amber-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md hover:shadow-lg"
+              className="flex-1 px-6 py-3 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md hover:shadow-lg"
             >
               {isSubmitting ? 'Adding...' : 'Add Nurturing'}
             </button>

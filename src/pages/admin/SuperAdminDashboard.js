@@ -9,6 +9,7 @@ import EnhancedMemberDetailModal from '../../components/EnhancedMemberDetailModa
 import AdminInGatheringManagement from '../../components/AdminInGatheringManagement';
 import AdminNurturingManagement from '../../components/AdminNurturingManagement';
 import AttendanceSessionManager from '../../components/AttendanceSessionManager';
+import OrganizationAnalytics from '../../components/OrganizationAnalytics';
 
 const SuperAdminDashboard = () => {
   const { members } = useMemberContext();
@@ -222,6 +223,21 @@ const SuperAdminDashboard = () => {
             </svg>
             Manage Attendance Sessions
           </button>
+
+          <Link
+            to="/superadmin/analytics"
+            className="flex items-center gap-2 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white px-6 py-3 rounded-lg font-semibold shadow-lg transition-all transform hover:scale-105"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+              <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z" />
+            </svg>
+            View Full Analytics
+          </Link>
+        </div>
+
+        {/* Organization Analytics Overview */}
+        <div className="mb-8">
+          <OrganizationAnalytics />
         </div>
 
         {/* Table Card */}
@@ -246,7 +262,7 @@ const SuperAdminDashboard = () => {
           ) : (
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-cyan-400">
+                <thead className="bg-purple-600">
                   <tr>
                     <th className="px-4 py-3 text-left text-xs font-bold text-white uppercase tracking-wider">
                       Name
@@ -282,7 +298,7 @@ const SuperAdminDashboard = () => {
                     <tr
                       key={member.membershipNumber || index}
                       onClick={() => handleMemberClick(member)}
-                      className="hover:bg-cyan-50 transition-colors cursor-pointer"
+                      className="hover:bg-purple-50 transition-colors cursor-pointer"
                     >
                       <td className="px-4 py-3 whitespace-nowrap">
                         <div className="text-sm font-medium text-gray-900">
@@ -338,8 +354,8 @@ const SuperAdminDashboard = () => {
         </div>
 
         {/* Info Message - SuperAdmin has click-to-view functionality */}
-        <div className="mt-8 bg-cyan-50 border-l-4 border-cyan-500 p-4 rounded shadow-md">
-          <p className="text-cyan-900 text-sm">
+        <div className="mt-8 bg-purple-50 border-l-4 border-purple-600 p-4 rounded shadow-md">
+          <p className="text-purple-900 text-sm">
             <strong>💡 Tip:</strong> Click on any member row in the table above to view their complete profile information including REG number, ID number, date of birth, date joined, and all other details.
           </p>
         </div>
@@ -350,15 +366,15 @@ const SuperAdminDashboard = () => {
             <h3 className="text-sm font-semibold opacity-90 uppercase tracking-wide">Total Giving</h3>
             <p className="text-3xl font-bold mt-2">KSH {givingStats.totalAmount.toLocaleString()}</p>
           </div>
-          <div className="bg-gradient-to-br from-blue-500 to-blue-700 rounded-lg shadow-lg p-6 text-white">
+          <div className="bg-gradient-to-br from-purple-500 to-purple-700 rounded-lg shadow-lg p-6 text-white">
             <h3 className="text-sm font-semibold opacity-90 uppercase tracking-wide">Offering</h3>
             <p className="text-3xl font-bold mt-2">KSH {givingStats.offeringTotal.toLocaleString()}</p>
           </div>
-          <div className="bg-gradient-to-br from-green-500 to-green-700 rounded-lg shadow-lg p-6 text-white">
+          <div className="bg-gradient-to-br from-purple-500 to-purple-700 rounded-lg shadow-lg p-6 text-white">
             <h3 className="text-sm font-semibold opacity-90 uppercase tracking-wide">Tithe</h3>
             <p className="text-3xl font-bold mt-2">KSH {givingStats.titheTotal.toLocaleString()}</p>
           </div>
-          <div className="bg-gradient-to-br from-orange-500 to-orange-700 rounded-lg shadow-lg p-6 text-white">
+          <div className="bg-gradient-to-br from-gold-500 to-gold-700 rounded-lg shadow-lg p-6 text-white">
             <h3 className="text-sm font-semibold opacity-90 uppercase tracking-wide">Extra Givings</h3>
             <p className="text-3xl font-bold mt-2">KSH {givingStats.extraGivingsTotal.toLocaleString()}</p>
           </div>
@@ -435,9 +451,9 @@ const SuperAdminDashboard = () => {
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap">
                         <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
-                          record.donationType === 'Tithe' ? 'bg-green-100 text-green-800' :
-                          record.donationType === 'Offering' ? 'bg-blue-100 text-blue-800' :
-                          'bg-orange-100 text-orange-800'
+                          record.donationType === 'Tithe' ? 'bg-purple-100 text-purple-800' :
+                          record.donationType === 'Offering' ? 'bg-purple-100 text-purple-800' :
+                          'bg-gold-100 text-gold-800'
                         }`}>
                           {record.donationType}
                         </span>
@@ -454,8 +470,8 @@ const SuperAdminDashboard = () => {
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap">
                         <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
-                          record.status === 'Completed' ? 'bg-green-100 text-green-800' :
-                          record.status === 'Pending' ? 'bg-yellow-100 text-yellow-800' :
+                          record.status === 'Completed' ? 'bg-purple-100 text-purple-800' :
+                          record.status === 'Pending' ? 'bg-gold-100 text-gold-800' :
                           'bg-red-100 text-red-800'
                         }`}>
                           {record.status}

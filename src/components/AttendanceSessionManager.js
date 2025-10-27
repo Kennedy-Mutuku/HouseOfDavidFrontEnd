@@ -268,7 +268,17 @@ const AttendanceSessionManager = ({ isOpen, onClose }) => {
       doc.text((sessionData.signatures?.length || 0).toString() + ' signatures', 133, currentY);
       doc.setTextColor(0, 0, 0);
 
-      currentY += 2;
+      currentY += 5;
+
+      // Add legend for new members indicator
+      doc.setFontSize(7);
+      doc.setFont(undefined, 'italic');
+      doc.setTextColor(100, 100, 100);
+      doc.text('⭐ = New Member (not registered in database)', 14, currentY);
+      doc.setFont(undefined, 'normal');
+      doc.setTextColor(0, 0, 0);
+
+      currentY += 1;
 
       // Add table with signatures in reverse order (latest first)
       const reversedSignatures = sessionData.signatures && sessionData.signatures.length > 0
@@ -276,7 +286,7 @@ const AttendanceSessionManager = ({ isOpen, onClose }) => {
         : [];
       const tableData = reversedSignatures.map((sig, index) => [
         index + 1,
-        sig.fullName,
+        sig.isRegistered === false ? `${sig.fullName} ⭐` : sig.fullName,  // Add star for new members
         sig.phoneNumber,
         formatDateTime(sig.signedAt)
       ]);
@@ -422,16 +432,16 @@ const AttendanceSessionManager = ({ isOpen, onClose }) => {
         <div className="p-6 overflow-y-auto max-h-[calc(90vh-80px)]">
           {/* Active Session Banner */}
           {activeSession && (
-            <div className="bg-green-100 border-l-4 border-green-500 p-4 mb-6 rounded">
+            <div className="bg-purple-100 border-l-4 border-purple-600 p-4 mb-6 rounded">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="font-bold text-green-800 text-lg">{activeSession.sessionName}</p>
-                  <p className="text-sm text-green-700">Active Session - {activeSession.signatures.length} signatures</p>
+                  <p className="font-bold text-purple-800 text-lg">{activeSession.sessionName}</p>
+                  <p className="text-sm text-purple-700">Active Session - {activeSession.signatures.length} signatures</p>
                 </div>
                 <div className="flex space-x-2">
                   <button
                     onClick={() => handleRefreshSession(activeSession._id)}
-                    className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold transition-colors flex items-center"
+                    className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-semibold transition-colors flex items-center"
                     title="Refresh session and clear all signatures"
                   >
                     <FiRefreshCw className="mr-1" /> Refresh
@@ -552,13 +562,13 @@ const AttendanceSessionManager = ({ isOpen, onClose }) => {
                     <div className="flex flex-col space-y-2 ml-4">
                       <button
                         onClick={() => viewSessionDetails(session._id)}
-                        className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm font-semibold transition-colors"
+                        className="bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 rounded text-sm font-semibold transition-colors"
                       >
                         View Details
                       </button>
                       <button
                         onClick={() => downloadPDF(session)}
-                        className="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-sm font-semibold transition-colors flex items-center justify-center"
+                        className="bg-gold-500 hover:bg-gold-600 text-white px-3 py-1 rounded text-sm font-semibold transition-colors flex items-center justify-center"
                       >
                         <FiDownload className="mr-1" /> PDF
                       </button>
@@ -604,7 +614,14 @@ const AttendanceSessionManager = ({ isOpen, onClose }) => {
                         {[...selectedSession.signatures].reverse().map((sig, index) => (
                           <tr key={sig._id || index}>
                             <td className="px-4 py-3 whitespace-nowrap text-sm">{index + 1}</td>
-                            <td className="px-4 py-3 whitespace-nowrap text-sm font-medium">{sig.fullName}</td>
+                            <td className="px-4 py-3 whitespace-nowrap text-sm font-medium">
+                              {sig.fullName}
+                              {sig.isRegistered === false && (
+                                <span className="ml-2 text-xs bg-gold-100 text-gold-800 px-2 py-1 rounded-full font-semibold">
+                                  ⭐ New Member
+                                </span>
+                              )}
+                            </td>
                             <td className="px-4 py-3 whitespace-nowrap text-sm">{sig.phoneNumber}</td>
                             <td className="px-4 py-3 whitespace-nowrap text-sm">{formatDateTime(sig.signedAt)}</td>
                             <td className="px-4 py-3">

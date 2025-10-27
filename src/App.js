@@ -8,6 +8,7 @@ import UserDashboard from './pages/user/UserDashboard';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import ManageMembers from './pages/admin/ManageMembers';
 import SuperAdminDashboard from './pages/admin/SuperAdminDashboard';
+import AnalyticsPage from './pages/admin/AnalyticsPage';
 
 // Components
 import UserLayout from './components/UserLayout';
@@ -60,6 +61,14 @@ function App() {
         element={
           <ProtectedRoute allowedRoles={['superAdmin']}>
             <SuperAdminDashboard />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/superadmin/analytics"
+        element={
+          <ProtectedRoute allowedRoles={['superAdmin']}>
+            <AnalyticsPage />
           </ProtectedRoute>
         }
       />

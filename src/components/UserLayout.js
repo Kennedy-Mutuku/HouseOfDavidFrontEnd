@@ -195,7 +195,7 @@ const UserLayout = () => {
         <div className="mx-auto px-4 sm:px-6 lg:px-12 xl:px-16 2xl:px-20">
           <div className="flex items-center justify-between h-20 lg:h-24 w-full">
             {/* Logo - Far Left on Mobile */}
-            <div className="relative flex-shrink-0 lg:mr-5">
+            <Link to="/user/dashboard" className="relative flex-shrink-0 lg:mr-5 cursor-pointer hover:opacity-90 transition-opacity">
               <div className="absolute inset-0 bg-gold-400 rounded-full blur-lg opacity-60 lg:opacity-70"></div>
               <div className="relative h-12 w-12 sm:h-14 sm:w-14 lg:h-20 lg:w-20 rounded-full border-3 lg:border-4 border-gold-400 shadow-2xl ring-2 ring-white/30 overflow-hidden bg-white flex items-center justify-center">
                 <img
@@ -204,17 +204,17 @@ const UserLayout = () => {
                   className="w-full h-full object-contain p-0.5 sm:p-1 lg:p-1.5"
                 />
               </div>
-            </div>
+            </Link>
 
             {/* Text - Centered on All Screen Sizes */}
-            <div className="absolute left-1/2 -translate-x-1/2">
+            <Link to="/user/dashboard" className="absolute left-1/2 -translate-x-1/2 cursor-pointer hover:opacity-90 transition-opacity">
               <h1 className="text-base sm:text-xl md:text-2xl lg:text-4xl font-extrabold text-white tracking-tight leading-none whitespace-nowrap lg:tracking-wide text-center">
                 HOUSE OF DAVID
               </h1>
               <p className="text-[10px] sm:text-xs lg:text-sm text-cyan-300 uppercase tracking-wide lg:tracking-widest font-semibold mt-0.5 lg:mt-1 whitespace-nowrap text-center">
                 Journey to the Finish
               </p>
-            </div>
+            </Link>
 
             {/* Desktop Navigation */}
             <nav className="hidden lg:flex items-center space-x-2 xl:space-x-3">
@@ -348,7 +348,7 @@ const UserLayout = () => {
           <div className="bg-white rounded-3xl shadow-2xl max-w-md w-full overflow-hidden" onClick={(e) => e.stopPropagation()}>
             {/* Logo at Top */}
             <div className="bg-gradient-to-r from-purple-800 via-purple-700 to-purple-900 p-6 flex justify-center">
-              <div className="relative">
+              <Link to="/user/dashboard" onClick={() => setShowProfileModal(false)} className="relative cursor-pointer hover:opacity-90 transition-opacity">
                 <div className="absolute inset-0 bg-gold-400 rounded-full blur-lg opacity-60"></div>
                 <div className="relative h-24 w-24 rounded-full border-4 border-gold-400 shadow-2xl ring-2 ring-white/30 overflow-hidden bg-white flex items-center justify-center">
                   <img
@@ -357,7 +357,7 @@ const UserLayout = () => {
                     className="w-full h-full object-contain p-2"
                   />
                 </div>
-              </div>
+              </Link>
             </div>
 
             {isAuthenticated ? (

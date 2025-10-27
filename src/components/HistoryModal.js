@@ -35,18 +35,7 @@ const HistoryModal = ({ isOpen, onClose, historyType, historyData, loading }) =>
   };
 
   const getColor = () => {
-    switch (historyType) {
-      case 'giving':
-        return 'bg-green-500';
-      case 'attendance':
-        return 'bg-blue-500';
-      case 'ingathering':
-        return 'bg-purple-500';
-      case 'nurturing':
-        return 'bg-orange-500';
-      default:
-        return 'bg-gray-500';
-    }
+    return 'bg-purple-600';
   };
 
   const formatDate = (dateString) => {
@@ -72,7 +61,7 @@ const HistoryModal = ({ isOpen, onClose, historyType, historyData, loading }) =>
   };
 
   const renderGivingHistory = (item) => (
-    <div className="border-l-4 border-green-500 pl-3">
+    <div className="border-l-4 border-purple-600 pl-3">
       <div className="flex justify-between items-start">
         <div className="flex-1">
           <p className="font-semibold text-sm text-gray-800">{item.donationType || 'Donation'}</p>
@@ -81,7 +70,7 @@ const HistoryModal = ({ isOpen, onClose, historyType, historyData, loading }) =>
             <p className="text-[10px] text-gray-500">via {item.paymentMethod}</p>
           )}
         </div>
-        <p className="text-sm font-bold text-green-600 ml-2">Ksh {item.amount?.toLocaleString('en-KE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+        <p className="text-sm font-bold text-gold-500 ml-2">Ksh {item.amount?.toLocaleString('en-KE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
       </div>
       {item.description && (
         <p className="text-xs text-gray-500 mt-0.5">{item.description}</p>
@@ -93,13 +82,13 @@ const HistoryModal = ({ isOpen, onClose, historyType, historyData, loading }) =>
   );
 
   const renderAttendanceHistory = (item) => (
-    <div className="border-l-4 border-blue-500 pl-3">
+    <div className="border-l-4 border-purple-600 pl-3">
       <div className="flex justify-between items-start">
         <div className="flex-1">
           <p className="font-semibold text-sm text-gray-800">{item.serviceType || 'Service'}</p>
           <p className="text-xs text-gray-600">{formatDate(item.signedAt || item.createdAt)}</p>
         </div>
-        <span className="px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full text-[10px] font-semibold ml-2">
+        <span className="px-2 py-0.5 bg-purple-100 text-purple-700 rounded-full text-[10px] font-semibold ml-2">
           Present
         </span>
       </div>
@@ -118,9 +107,9 @@ const HistoryModal = ({ isOpen, onClose, historyType, historyData, loading }) =>
         )}
         {item.status && (
           <span className={`inline-block mt-1 px-2 py-0.5 rounded-full text-[10px] font-semibold ${
-            item.status === 'Approved' ? 'bg-green-100 text-green-700' :
-            item.status === 'Attended' ? 'bg-blue-100 text-blue-700' :
-            item.status === 'Pending' ? 'bg-yellow-100 text-yellow-700' :
+            item.status === 'Approved' ? 'bg-purple-100 text-purple-700' :
+            item.status === 'Attended' ? 'bg-purple-100 text-purple-700' :
+            item.status === 'Pending' ? 'bg-gold-100 text-gold-700' :
             item.status === 'Rejected' ? 'bg-red-100 text-red-700' :
             item.status === 'Not Interested' ? 'bg-gray-100 text-gray-700' :
             'bg-gray-100 text-gray-700'
@@ -141,7 +130,7 @@ const HistoryModal = ({ isOpen, onClose, historyType, historyData, loading }) =>
   );
 
   const renderNurturingHistory = (item) => (
-    <div className="border-l-4 border-orange-500 pl-3">
+    <div className="border-l-4 border-purple-600 pl-3">
       <div>
         <p className="font-semibold text-sm text-gray-800">
           {item.fullName}
@@ -152,10 +141,10 @@ const HistoryModal = ({ isOpen, onClose, historyType, historyData, loading }) =>
         )}
         {item.status && (
           <span className={`inline-block mt-1 px-2 py-0.5 rounded-full text-[10px] font-semibold ${
-            item.status === 'Approved' ? 'bg-green-100 text-green-700' :
-            item.status === 'Completed' ? 'bg-blue-100 text-blue-700' :
-            item.status === 'In Progress' ? 'bg-cyan-100 text-cyan-700' :
-            item.status === 'Pending' ? 'bg-yellow-100 text-yellow-700' :
+            item.status === 'Approved' ? 'bg-purple-100 text-purple-700' :
+            item.status === 'Completed' ? 'bg-purple-100 text-purple-700' :
+            item.status === 'In Progress' ? 'bg-purple-100 text-purple-700' :
+            item.status === 'Pending' ? 'bg-gold-100 text-gold-700' :
             item.status === 'Rejected' ? 'bg-red-100 text-red-700' :
             'bg-gray-100 text-gray-700'
           }`}>

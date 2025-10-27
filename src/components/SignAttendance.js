@@ -112,17 +112,17 @@ const SignAttendance = () => {
   return (
     <div className="bg-gradient-to-br from-purple-600 via-purple-700 to-indigo-800 rounded-2xl shadow-xl overflow-hidden">
       {/* Header */}
-      <div className="bg-gradient-to-r from-green-500 to-emerald-600 px-6 py-4">
+      <div className="bg-purple-600 px-6 py-4">
         <div className="flex items-center justify-between">
           <div>
             <h3 className="text-2xl font-bold text-white flex items-center">
               <FiCheckCircle className="mr-2" /> Sign Attendance
             </h3>
-            <p className="text-green-100 text-sm mt-1">{activeSession.sessionName}</p>
+            <p className="text-purple-100 text-sm mt-1">{activeSession.sessionName}</p>
           </div>
           <div className="text-right">
             <p className="text-white text-lg font-bold">{activeSession.signatureCount || 0}</p>
-            <p className="text-green-100 text-xs">Signed</p>
+            <p className="text-purple-100 text-xs">Signed</p>
           </div>
         </div>
       </div>
@@ -141,7 +141,7 @@ const SignAttendance = () => {
           </div>
           <button
             onClick={() => setShowForm(true)}
-            className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white px-8 py-4 rounded-lg font-bold text-lg shadow-lg transition-all transform hover:scale-105"
+            className="bg-purple-600 hover:bg-purple-700 text-white px-8 py-4 rounded-lg font-bold text-lg shadow-lg transition-all transform hover:scale-105"
           >
             Click to Sign Attendance
           </button>
@@ -156,7 +156,7 @@ const SignAttendance = () => {
             type="text"
             value={formData.fullName}
             onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-            className="w-full px-4 py-3 border border-purple-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+            className="w-full px-4 py-3 border border-purple-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
             placeholder="Enter your full name"
             required
           />
@@ -168,7 +168,7 @@ const SignAttendance = () => {
             type="tel"
             value={formData.phoneNumber}
             onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
-            className="w-full px-4 py-3 border border-purple-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+            className="w-full px-4 py-3 border border-purple-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
             placeholder="e.g., 0712345678"
             required
           />
@@ -206,7 +206,7 @@ const SignAttendance = () => {
           <button
             type="submit"
             disabled={signing}
-            className="w-2/3 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white px-6 py-3 rounded-lg font-bold text-lg shadow-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-2/3 bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg font-bold text-lg shadow-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {signing ? 'Signing...' : 'Sign Attendance'}
           </button>

@@ -45,7 +45,9 @@ const Layout = () => {
         }`}
       >
         <div className="flex items-center justify-between h-16 px-6 bg-primary-800">
-          <h1 className="text-xl font-bold text-white">House of David</h1>
+          <Link to="/admin/dashboard" className="text-xl font-bold text-white hover:opacity-90 transition-opacity cursor-pointer">
+            House of David
+          </Link>
           <button
             onClick={() => setSidebarOpen(false)}
             className="lg:hidden text-white hover:text-gray-200"

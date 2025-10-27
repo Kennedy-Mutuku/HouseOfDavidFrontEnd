@@ -100,7 +100,7 @@ const GivingModal = ({ isOpen, onClose, givingType, onSuccess }) => {
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto">
         {/* Header */}
-        <div className="bg-gradient-to-r from-orange-500 via-orange-600 to-amber-600 p-6 rounded-t-2xl relative">
+        <div className="bg-purple-600 p-6 rounded-t-2xl relative">
           <button
             onClick={onClose}
             className="absolute top-4 right-4 text-white hover:bg-white/20 rounded-full p-2 transition-all"
@@ -109,7 +109,7 @@ const GivingModal = ({ isOpen, onClose, givingType, onSuccess }) => {
             <FiX className="w-6 h-6" />
           </button>
           <h2 className="text-2xl font-bold text-white">Record {givingType}</h2>
-          <p className="text-orange-100 text-sm mt-1">
+          <p className="text-purple-100 text-sm mt-1">
             {isAuthenticated ? 'Track your contribution' : 'Login required to record giving'}
           </p>
         </div>
@@ -119,8 +119,8 @@ const GivingModal = ({ isOpen, onClose, givingType, onSuccess }) => {
           /* Login Form */
           <form onSubmit={handleLogin} className="p-6 space-y-5">
             <div className="flex flex-col items-center mb-4">
-              <div className="bg-orange-100 rounded-full p-4 mb-3">
-                <FiLock className="w-12 h-12 text-orange-600" />
+              <div className="bg-purple-100 rounded-full p-4 mb-3">
+                <FiLock className="w-12 h-12 text-purple-600" />
               </div>
               <h3 className="text-xl font-bold text-gray-800">Login Required</h3>
               <p className="text-gray-600 text-center mt-2">
@@ -140,7 +140,7 @@ const GivingModal = ({ isOpen, onClose, givingType, onSuccess }) => {
                 onChange={handleLoginChange}
                 placeholder="Enter your email"
                 required
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
               />
             </div>
 
@@ -156,7 +156,7 @@ const GivingModal = ({ isOpen, onClose, givingType, onSuccess }) => {
                 onChange={handleLoginChange}
                 placeholder="Enter your ID number"
                 required
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
               />
             </div>
 
@@ -172,7 +172,7 @@ const GivingModal = ({ isOpen, onClose, givingType, onSuccess }) => {
               <button
                 type="submit"
                 disabled={isLoggingIn}
-                className="flex-1 px-6 py-3 bg-gradient-to-r from-orange-500 to-amber-600 text-white font-semibold rounded-lg hover:from-orange-600 hover:to-amber-700 transition-all shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 px-6 py-3 bg-purple-600 text-white font-semibold rounded-lg hover:bg-purple-700 transition-all shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isLoggingIn ? 'Logging in...' : 'Login'}
               </button>
@@ -184,7 +184,7 @@ const GivingModal = ({ isOpen, onClose, givingType, onSuccess }) => {
           {/* Date Field */}
           <div>
             <label className="flex items-center text-gray-700 font-semibold mb-2">
-              <FiCalendar className="mr-2 text-orange-500" />
+              <FiCalendar className="mr-2 text-purple-600" />
               Date
             </label>
             <input
@@ -194,14 +194,14 @@ const GivingModal = ({ isOpen, onClose, givingType, onSuccess }) => {
               onChange={handleChange}
               max={new Date().toISOString().split('T')[0]}
               required
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
             />
           </div>
 
           {/* Amount Field */}
           <div>
             <label className="flex items-center text-gray-700 font-semibold mb-2">
-              <FiDollarSign className="mr-2 text-orange-500" />
+              <FiDollarSign className="mr-2 text-purple-600" />
               Amount (KSH)
             </label>
             <input
@@ -213,14 +213,14 @@ const GivingModal = ({ isOpen, onClose, givingType, onSuccess }) => {
               min="0"
               step="0.01"
               required
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
             />
           </div>
 
           {/* Message Field */}
           <div>
             <label className="flex items-center text-gray-700 font-semibold mb-2">
-              <FiMessageSquare className="mr-2 text-orange-500" />
+              <FiMessageSquare className="mr-2 text-purple-600" />
               Message (Optional)
             </label>
             <textarea
@@ -229,7 +229,7 @@ const GivingModal = ({ isOpen, onClose, givingType, onSuccess }) => {
               onChange={handleChange}
               placeholder="Prayer point, M-Pesa message, or any note..."
               rows="4"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent resize-none"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
             />
             <p className="text-xs text-gray-500 mt-1">
               You can add prayer points, transaction details, or any accompanying message
@@ -248,7 +248,7 @@ const GivingModal = ({ isOpen, onClose, givingType, onSuccess }) => {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="flex-1 px-6 py-3 bg-gradient-to-r from-orange-500 to-amber-600 text-white font-semibold rounded-lg hover:from-orange-600 hover:to-amber-700 transition-all shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 px-6 py-3 bg-purple-600 text-white font-semibold rounded-lg hover:bg-purple-700 transition-all shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSubmitting ? 'Submitting...' : 'Submit'}
             </button>

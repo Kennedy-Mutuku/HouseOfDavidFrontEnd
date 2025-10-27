@@ -1,5 +1,6 @@
 import React from 'react';
 import { FiX, FiUser, FiMail, FiPhone, FiCalendar, FiMapPin, FiUsers, FiHeart, FiBriefcase, FiAlertCircle } from 'react-icons/fi';
+import MemberAnalytics from './MemberAnalytics';
 
 const MemberDetailModal = ({ isOpen, onClose, member }) => {
   const formatDate = (date) => {
@@ -234,6 +235,13 @@ const MemberDetailModal = ({ isOpen, onClose, member }) => {
                     />
                   )}
                 </div>
+              </div>
+            )}
+
+            {/* Member Analytics Section */}
+            {member._id && (
+              <div className="mt-6">
+                <MemberAnalytics memberId={member._id} />
               </div>
             )}
 
