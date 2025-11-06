@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   FiChevronDown,
   FiChevronUp,
@@ -140,6 +140,81 @@ const UserDashboard = () => {
     return () => clearInterval(timer);
   }, [carouselSlides.length]);
 
+  // Listen for history menu events from header
+  useEffect(() => {
+    const handleOpenHistory = async (event) => {
+      const { type } = event.detail;
+
+      // Check if user is authenticated
+      if (!isAuthenticated || !user) {
+        toast.error('Please log in to view your history');
+        return;
+      }
+
+      setHistoryModal({
+        isOpen: true,
+        type: type,
+        data: [],
+        loading: true
+      });
+
+      try {
+        let response;
+        let historyData = [];
+
+        switch (type) {
+          case 'giving':
+            response = await axios.get('/donations/my-giving');
+            historyData = response.data.data?.history || [];
+            historyData.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+            break;
+
+          case 'ingathering':
+            response = await axios.get('/ingathering/my-ingathering');
+            historyData = response.data.data?.list || [];
+            historyData.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+            break;
+
+          case 'nurturing':
+            response = await axios.get('/nurturing/my-nurturing');
+            historyData = response.data.data?.list || [];
+            historyData.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+            break;
+
+          default:
+            historyData = [];
+        }
+
+        setHistoryModal(prev => ({
+          ...prev,
+          data: historyData,
+          loading: false
+        }));
+
+        if (historyData.length === 0 && type !== 'nurturing') {
+          toast.info(`You don't have any ${type} history yet`);
+        }
+      } catch (error) {
+        console.error(`Error fetching ${type} history:`, error);
+
+        if (error.response?.status === 401) {
+          toast.error('Your session has expired. Please log in again.');
+        } else {
+          toast.error(`Failed to load ${type} history`);
+        }
+
+        setHistoryModal(prev => ({
+          ...prev,
+          data: [],
+          loading: false
+        }));
+      }
+    };
+
+    window.addEventListener('openHistory', handleOpenHistory);
+    return () => window.removeEventListener('openHistory', handleOpenHistory);
+  }, [isAuthenticated, user]);
+
   const nextSlide = () => {
     setCurrentSlide((prev) => (prev + 1) % carouselSlides.length);
   };
@@ -193,7 +268,7 @@ const UserDashboard = () => {
     setNurturingModal(false);
   };
 
-  const handleHistoryClick = async (historyType) => {
+  const handleHistoryClick = useCallback(async (historyType) => {
     // Check if user is authenticated
     if (!isAuthenticated || !user) {
       toast.error('Please log in to view your history');
@@ -278,7 +353,7 @@ const UserDashboard = () => {
         loading: false
       }));
     }
-  };
+  }, [isAuthenticated, user]);
 
   const closeHistoryModal = () => {
     setHistoryModal({
@@ -445,57 +520,14 @@ const UserDashboard = () => {
             ))}
           </div>
 
-          {/* History Buttons */}
-          <div className="mt-6 space-y-3">
-            {/* My Giving History - Full Width */}
-            <button
-              onClick={() => handleHistoryClick('giving')}
-              className="w-full group bg-white hover:bg-purple-50 text-purple-600 border-2 border-gold-500 hover:border-gold-600 rounded-lg p-4 shadow-md transition-all transform hover:scale-105 hover:shadow-lg flex flex-col items-center justify-center space-y-1"
-              aria-label="My Giving History"
-            >
-              <FiDollarSign className="w-6 h-6 md:w-7 md:h-7 text-gold-500 group-hover:scale-110 transition-transform" />
-              <span className="text-sm md:text-base font-bold text-center">My Giving History</span>
-            </button>
-
-            {/* Sign Attendance Component */}
+          {/* Sign Attendance Component */}
+          <div className="mt-6">
             <SignAttendance />
-
-            {/* My Ingathering and My Nurturing - Side by Side */}
-            <div className="grid grid-cols-2 gap-3">
-              {/* My Ingathering History */}
-              <button
-                onClick={() => handleHistoryClick('ingathering')}
-                className="group bg-gray-100 hover:bg-purple-50 text-purple-600 border-2 border-gray-300 hover:border-purple-400 rounded-lg p-4 shadow-md transition-all transform hover:scale-105 hover:shadow-lg flex flex-col items-center justify-center space-y-1"
-                aria-label="My Ingathering History"
-              >
-                <FiUsers className="w-5 h-5 md:w-6 md:h-6 text-purple-600 group-hover:scale-110 transition-transform" />
-                <span className="text-[10px] md:text-xs font-bold text-center">My Ingathering History</span>
-              </button>
-
-              {/* My Nurturing History */}
-              <button
-                onClick={() => handleHistoryClick('nurturing')}
-                className="group bg-gray-100 hover:bg-purple-50 text-purple-600 border-2 border-gray-300 hover:border-purple-400 rounded-lg p-4 shadow-md transition-all transform hover:scale-105 hover:shadow-lg flex flex-col items-center justify-center space-y-1"
-                aria-label="My Nurturing History"
-              >
-                <FiHeart className="w-5 h-5 md:w-6 md:h-6 text-purple-600 group-hover:scale-110 transition-transform" />
-                <span className="text-[10px] md:text-xs font-bold text-center">My Nurturing History</span>
-              </button>
-            </div>
           </div>
 
           {/* User Analytics Section */}
           <div className="mt-8">
             <UserAnalytics />
-          </div>
-
-          {/* Call to Action */}
-          <div className="mt-10 text-center bg-white rounded-2xl p-8 border-2 border-gold-500 shadow-lg">
-            <h3 className="text-2xl font-bold text-purple-600 mb-3">Ready to Get Involved?</h3>
-            <p className="text-gray-700 mb-5 max-w-2xl mx-auto">
-              Connect with our ministry teams and find your place in our community.
-              Your journey of faith and service starts here.
-            </p>
           </div>
           </div>
         </div>

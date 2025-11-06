@@ -15,7 +15,8 @@ import {
   FiCheckCircle,
   FiEye,
   FiEyeOff,
-  FiEdit2
+  FiEdit2,
+  FiHeart
 } from 'react-icons/fi';
 
 const UserLayout = () => {
@@ -29,6 +30,7 @@ const UserLayout = () => {
   const [loginError, setLoginError] = useState('');
   const [memberData, setMemberData] = useState(null);
   const [loadingMemberData, setLoadingMemberData] = useState(false);
+  const [showHistoryMenu, setShowHistoryMenu] = useState(false);
 
   // Login form state
   const [loginForm, setLoginForm] = useState({
@@ -243,6 +245,79 @@ const UserLayout = () => {
 
             {/* Right Side Actions - Far Right */}
             <div className="flex items-center space-x-2 sm:space-x-3 flex-shrink-0 ml-auto">
+              {/* History Menu Button */}
+              <div className="relative">
+                <button
+                  onClick={() => setShowHistoryMenu(!showHistoryMenu)}
+                  className="flex items-center space-x-2 bg-white/10 backdrop-blur-sm rounded-xl px-3 py-2 border border-white/20 hover:bg-white/15 transition-all duration-300 shadow-lg"
+                >
+                  <FiMenu className="w-5 h-5 text-white" />
+                  <span className="hidden sm:inline text-white text-sm font-semibold">History</span>
+                </button>
+
+                {/* History Dropdown Menu */}
+                {showHistoryMenu && (
+                  <>
+                    {/* Backdrop */}
+                    <div
+                      className="fixed inset-0 z-40"
+                      onClick={() => setShowHistoryMenu(false)}
+                    ></div>
+
+                    {/* Dropdown */}
+                    <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-2xl z-50 overflow-hidden border border-gray-200">
+                      <div className="bg-gradient-to-r from-purple-600 to-purple-700 px-4 py-3 border-b border-purple-500">
+                        <h3 className="text-white font-bold text-sm">My History</h3>
+                      </div>
+                      <div className="py-2">
+                        {/* My Giving History */}
+                        <a
+                          href="#"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            setShowHistoryMenu(false);
+                            // Trigger the history handler from UserDashboard
+                            window.dispatchEvent(new CustomEvent('openHistory', { detail: { type: 'giving' } }));
+                          }}
+                          className="flex items-center px-4 py-3 hover:bg-purple-50 transition-colors group"
+                        >
+                          <FiDollarSign className="w-5 h-5 text-gold-500 mr-3 group-hover:scale-110 transition-transform" />
+                          <span className="text-gray-700 font-medium text-sm group-hover:text-purple-600">My Giving History</span>
+                        </a>
+
+                        {/* My Ingathering History */}
+                        <a
+                          href="#"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            setShowHistoryMenu(false);
+                            window.dispatchEvent(new CustomEvent('openHistory', { detail: { type: 'ingathering' } }));
+                          }}
+                          className="flex items-center px-4 py-3 hover:bg-purple-50 transition-colors group"
+                        >
+                          <FiUsers className="w-5 h-5 text-purple-600 mr-3 group-hover:scale-110 transition-transform" />
+                          <span className="text-gray-700 font-medium text-sm group-hover:text-purple-600">My Ingathering History</span>
+                        </a>
+
+                        {/* My Nurturing History */}
+                        <a
+                          href="#"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            setShowHistoryMenu(false);
+                            window.dispatchEvent(new CustomEvent('openHistory', { detail: { type: 'nurturing' } }));
+                          }}
+                          className="flex items-center px-4 py-3 hover:bg-purple-50 transition-colors group"
+                        >
+                          <FiHeart className="w-5 h-5 text-pink-600 mr-3 group-hover:scale-110 transition-transform" />
+                          <span className="text-gray-700 font-medium text-sm group-hover:text-purple-600">My Nurturing History</span>
+                        </a>
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
+
               {/* User Profile Button - Mobile */}
               <div className="lg:hidden relative">
                 <button
@@ -259,13 +334,13 @@ const UserLayout = () => {
                 </p>
               </div>
 
-              {/* Mobile Menu Button */}
-              <button
+              {/* Mobile Menu Button - Hidden since not needed */}
+              {/* <button
                 onClick={() => setSidebarOpen(!sidebarOpen)}
                 className="lg:hidden text-white hover:text-cyan-300 transition-colors p-1"
               >
                 {sidebarOpen ? <FiX className="w-6 h-6 sm:w-7 sm:h-7" /> : <FiMenu className="w-6 h-6 sm:w-7 sm:h-7" />}
-              </button>
+              </button> */}
 
               {/* User Profile Button - Desktop */}
               <button

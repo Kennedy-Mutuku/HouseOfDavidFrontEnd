@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
 import axios from '../utils/axios';
 import { useAuth } from '../context/AuthContext';
-import { FiDollarSign, FiCheckCircle, FiUsers, FiAlertCircle } from 'react-icons/fi';
+import { FiDollarSign, FiCheckCircle, FiUsers, FiAlertCircle, FiRefreshCw } from 'react-icons/fi';
 
 const UserAnalytics = () => {
   const { isAuthenticated, user } = useAuth();
@@ -11,7 +11,9 @@ const UserAnalytics = () => {
   const [givingData, setGivingData] = useState([]);
   const [attendanceData, setAttendanceData] = useState([]);
   const [inGatheringData, setInGatheringData] = useState([]);
+  const [stats, setStats] = useState({});
   const hasFetchedRef = useRef(false);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   // Color schemes
   const GIVING_COLORS = {
@@ -30,14 +32,16 @@ const UserAnalytics = () => {
     'Nurturing': '#F59E0B'      // Amber/Orange
   };
 
-  const fetchAnalytics = useCallback(async () => {
-    // Prevent multiple fetches
-    if (hasFetchedRef.current || !isAuthenticated) {
+  const fetchAnalytics = useCallback(async (forceRefresh = false) => {
+    // Prevent multiple fetches unless forced
+    if (!forceRefresh && (hasFetchedRef.current || !isAuthenticated)) {
       return;
     }
 
     try {
-      hasFetchedRef.current = true;
+      if (!forceRefresh) {
+        hasFetchedRef.current = true;
+      }
       setLoading(true);
       setError(null);
 
@@ -94,6 +98,14 @@ const UserAnalytics = () => {
 
       setInGatheringData(comparisonData);
 
+      // Set summary stats
+      setStats({
+        totalGiving: givingStats.totalGiving || 0,
+        attendanceRate: attendanceStats.attendanceRate || 0,
+        totalInGathering: inGatheringCount,
+        totalNurturing: nurturingCount
+      });
+
       setLoading(false);
     } catch (error) {
       console.error('Error fetching analytics:', error);
@@ -112,6 +124,17 @@ const UserAnalytics = () => {
     if (isAuthenticated && !hasFetchedRef.current) {
       fetchAnalytics();
     }
+  }, [isAuthenticated, fetchAnalytics]);
+
+  // Auto-refresh analytics every 30 seconds to catch new attendance/giving
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
+    const interval = setInterval(() => {
+      fetchAnalytics(true); // Force refresh
+    }, 30000); // 30 seconds
+
+    return () => clearInterval(interval);
   }, [isAuthenticated, fetchAnalytics]);
 
   const renderCustomLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent }) => {
@@ -191,14 +214,72 @@ const UserAnalytics = () => {
     );
   }
 
+  const handleManualRefresh = () => {
+    fetchAnalytics(true);
+  };
+
   return (
     <div className="bg-gradient-to-br from-purple-50 to-gold-50 rounded-2xl p-6 border-2 border-gold-500 shadow-lg">
-      <div className="mb-6">
-        <h2 className="text-2xl font-bold text-purple-600 flex items-center gap-2">
-          <FiDollarSign className="w-6 h-6" />
-          My Analytics Overview
-        </h2>
-        <p className="text-gray-600 mt-1">Track your giving, attendance, and in-gathering activities</p>
+      <div className="mb-6 flex items-start justify-between">
+        <div>
+          <h2 className="text-2xl font-bold text-purple-600 flex items-center gap-2">
+            <FiDollarSign className="w-6 h-6" />
+            My Analytics Overview
+          </h2>
+          <p className="text-gray-600 mt-1">Track your giving, attendance, and in-gathering activities</p>
+        </div>
+        <button
+          onClick={handleManualRefresh}
+          disabled={loading}
+          className="flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          title="Refresh analytics"
+        >
+          <FiRefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+          <span className="text-sm font-medium">Refresh</span>
+        </button>
+      </div>
+
+      {/* Summary Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div className="bg-white rounded-lg p-4 shadow-md border-l-4 border-purple-500">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-600 font-medium">Total Giving</p>
+              <p className="text-2xl font-bold text-purple-600">KSH {stats.totalGiving?.toLocaleString()}</p>
+            </div>
+            <FiDollarSign className="w-10 h-10 text-purple-300" />
+          </div>
+        </div>
+
+        <div className="bg-white rounded-lg p-4 shadow-md border-l-4 border-green-500">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-600 font-medium">Attendance Rate</p>
+              <p className="text-2xl font-bold text-green-600">{stats.attendanceRate}%</p>
+            </div>
+            <FiCheckCircle className="w-10 h-10 text-green-300" />
+          </div>
+        </div>
+
+        <div className="bg-white rounded-lg p-4 shadow-md border-l-4 border-cyan-500">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-600 font-medium">In-Gatherings</p>
+              <p className="text-2xl font-bold text-cyan-600">{stats.totalInGathering}</p>
+            </div>
+            <FiUsers className="w-10 h-10 text-cyan-300" />
+          </div>
+        </div>
+
+        <div className="bg-white rounded-lg p-4 shadow-md border-l-4 border-orange-500">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-600 font-medium">Nurturing</p>
+              <p className="text-2xl font-bold text-orange-600">{stats.totalNurturing}</p>
+            </div>
+            <FiUsers className="w-10 h-10 text-orange-300" />
+          </div>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
