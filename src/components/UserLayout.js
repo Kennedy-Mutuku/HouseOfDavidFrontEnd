@@ -186,34 +186,32 @@ const UserLayout = () => {
     setIsEditingGroups(false);
   };
 
-  const navigation = [
-    { name: 'Dashboard', path: '/user/dashboard', icon: FiHome }
-  ];
+  const navigation = [];
 
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Professional Header */}
-      <header className="bg-gradient-to-r from-purple-800 via-purple-700 to-purple-900 sticky top-0 z-50 border-b-2 border-gold-400/30">
-        <div className="mx-auto px-4 sm:px-6 lg:px-12 xl:px-16 2xl:px-20">
-          <div className="flex items-center justify-between h-20 lg:h-24 w-full">
-            {/* Logo - Far Left on Mobile */}
-            <Link to="/user/dashboard" className="relative flex-shrink-0 lg:mr-5 cursor-pointer hover:opacity-90 transition-opacity">
-              <div className="absolute inset-0 bg-gold-400 rounded-full blur-lg opacity-60 lg:opacity-70"></div>
-              <div className="relative h-12 w-12 sm:h-14 sm:w-14 lg:h-20 lg:w-20 rounded-full border-3 lg:border-4 border-gold-400 shadow-2xl ring-2 ring-white/30 overflow-hidden bg-white flex items-center justify-center">
+      <header className="bg-gradient-to-r from-purple-800 to-purple-900 sticky top-0 z-50 border-b border-gold-400/50">
+        <div className="mx-auto px-3 sm:px-4 lg:px-8">
+          <div className="flex items-center justify-between h-14 sm:h-16 w-full">
+            {/* Logo - Far Left */}
+            <Link to="/user/dashboard" className="relative flex-shrink-0 mr-3 sm:mr-4 lg:mr-8 cursor-pointer hover:opacity-90 transition-opacity">
+              <div className="absolute inset-0 bg-gold-400 rounded-full blur-sm opacity-30 sm:opacity-40 lg:opacity-50"></div>
+              <div className="relative h-9 w-9 sm:h-10 sm:w-10 lg:h-12 lg:w-12 rounded-full border-2 border-gold-400 shadow-md overflow-hidden bg-white flex items-center justify-center">
                 <img
                   src="/images/logo.jpg"
                   alt="House of David Logo"
-                  className="w-full h-full object-contain p-0.5 sm:p-1 lg:p-1.5"
+                  className="w-full h-full object-contain p-0.5 sm:p-1"
                 />
               </div>
             </Link>
 
-            {/* Text - Centered on All Screen Sizes */}
-            <Link to="/user/dashboard" className="absolute left-1/2 -translate-x-1/2 cursor-pointer hover:opacity-90 transition-opacity">
-              <h1 className="text-base sm:text-xl md:text-2xl lg:text-4xl font-extrabold text-white tracking-tight leading-none whitespace-nowrap lg:tracking-wide text-center">
+            {/* Text - Centered */}
+            <Link to="/user/dashboard" className="flex-1 flex flex-col items-center justify-center cursor-pointer hover:opacity-90 transition-opacity px-2">
+              <h1 className="text-sm sm:text-lg lg:text-2xl font-bold text-white tracking-wide leading-tight whitespace-nowrap text-center">
                 HOUSE OF DAVID
               </h1>
-              <p className="text-[10px] sm:text-xs lg:text-sm text-cyan-300 uppercase tracking-wide lg:tracking-widest font-semibold mt-0.5 lg:mt-1 whitespace-nowrap text-center">
+              <p className="text-[10px] sm:text-xs text-gold-400 uppercase tracking-wide font-medium mt-0.5 whitespace-nowrap text-center">
                 Journey to the Finish
               </p>
             </Link>
@@ -244,15 +242,15 @@ const UserLayout = () => {
             </nav>
 
             {/* Right Side Actions - Far Right */}
-            <div className="flex items-center space-x-2 sm:space-x-3 flex-shrink-0 ml-auto">
+            <div className="flex items-center space-x-1.5 sm:space-x-2 flex-shrink-0">
               {/* History Menu Button */}
               <div className="relative">
                 <button
                   onClick={() => setShowHistoryMenu(!showHistoryMenu)}
-                  className="flex items-center space-x-2 bg-white/10 backdrop-blur-sm rounded-xl px-3 py-2 border border-white/20 hover:bg-white/15 transition-all duration-300 shadow-lg"
+                  className="flex items-center space-x-1.5 sm:space-x-2 bg-white/15 backdrop-blur-sm rounded-lg px-2 py-1.5 sm:px-3 sm:py-2 border border-white/30 hover:bg-white/20 transition-all duration-300 shadow-sm"
                 >
-                  <FiMenu className="w-5 h-5 text-white" />
-                  <span className="hidden sm:inline text-white text-sm font-semibold">History</span>
+                  <FiMenu className="w-4 h-4 text-white" />
+                  <span className="hidden sm:inline text-white text-sm font-medium">History</span>
                 </button>
 
                 {/* History Dropdown Menu */}
@@ -319,19 +317,19 @@ const UserLayout = () => {
               </div>
 
               {/* User Profile Button - Mobile */}
-              <div className="lg:hidden relative">
+              <div className="lg:hidden">
                 <button
                   onClick={() => setShowProfileModal(!showProfileModal)}
-                  className="relative"
+                  className="relative flex items-center space-x-1.5 bg-white/15 backdrop-blur-sm rounded-lg px-2 py-1.5 border border-white/30 hover:bg-white/20 transition-all duration-300 shadow-sm"
                 >
-                  <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-gradient-to-br from-cyan-400 to-cyan-600 flex items-center justify-center text-white font-bold text-sm sm:text-base border-2 border-gold-400 shadow-lg">
+                  <div className="relative w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-gradient-to-br from-cyan-400 to-cyan-600 flex items-center justify-center text-white font-bold text-xs border border-gold-400 flex-shrink-0">
                     {isAuthenticated ? user?.fullName?.split(' ').slice(0, 2).map(n => n[0]).join('') : 'MU'}
+                    {isAuthenticated && <div className="absolute -bottom-0.5 -right-0.5 w-2 h-2 bg-green-400 rounded-full border border-white"></div>}
                   </div>
-                  {isAuthenticated && <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-400 rounded-full border-2 border-white"></div>}
+                  <span className="text-[10px] sm:text-xs text-white font-medium max-w-[60px] sm:max-w-[80px] truncate">
+                    {isAuthenticated ? user?.fullName?.split(' ')[0] : 'Log In'}
+                  </span>
                 </button>
-                <p className="text-[10px] text-white text-center mt-1 font-semibold">
-                  {isAuthenticated ? user?.fullName?.split(' ')[0] : 'Log In'}
-                </p>
               </div>
 
               {/* Mobile Menu Button - Hidden since not needed */}
@@ -345,24 +343,24 @@ const UserLayout = () => {
               {/* User Profile Button - Desktop */}
               <button
                 onClick={() => setShowProfileModal(!showProfileModal)}
-                className="hidden lg:flex items-center space-x-4 bg-white/10 backdrop-blur-sm rounded-2xl px-4 py-2.5 border border-white/20 hover:bg-white/15 transition-all duration-300 shadow-lg"
+                className="hidden lg:flex items-center space-x-3 bg-white/15 backdrop-blur-sm rounded-lg px-3 py-2 border border-white/30 hover:bg-white/20 transition-all duration-300 shadow-md"
               >
                 <div className="text-right">
-                  <p className="text-white font-bold text-base tracking-wide">
+                  <p className="text-white font-semibold text-sm tracking-wide">
                     {isAuthenticated ? user?.fullName : 'Log In'}
                   </p>
                   {isAuthenticated && (
-                    <p className="text-cyan-300 text-xs capitalize font-semibold tracking-wider">
-                      <span className="inline-block w-2 h-2 bg-green-400 rounded-full mr-1.5"></span>
+                    <p className="text-gold-400 text-xs capitalize font-medium">
+                      <span className="inline-block w-1.5 h-1.5 bg-green-400 rounded-full mr-1"></span>
                       {user?.role}
                     </p>
                   )}
                 </div>
                 <div className="relative">
-                  <div className="w-14 h-14 rounded-full bg-gradient-to-br from-cyan-400 via-cyan-500 to-cyan-600 flex items-center justify-center text-white font-extrabold text-xl border-3 border-gold-400 shadow-2xl ring-2 ring-white/30">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-400 to-cyan-600 flex items-center justify-center text-white font-bold text-sm border-2 border-gold-400 shadow-md">
                     {isAuthenticated ? user?.fullName?.split(' ').slice(0, 2).map(n => n[0]).join('') : 'MU'}
                   </div>
-                  {isAuthenticated && <div className="absolute bottom-0 right-0 w-4 h-4 bg-green-400 rounded-full border-3 border-white shadow-md"></div>}
+                  {isAuthenticated && <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-400 rounded-full border-2 border-white"></div>}
                 </div>
               </button>
             </div>

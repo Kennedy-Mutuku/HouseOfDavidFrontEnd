@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import axios from '../../utils/axios';
 import UniformHeader from '../../components/UniformHeader';
+import OrganizationAnalytics from '../../components/OrganizationAnalytics';
 import { FiArrowLeft, FiDollarSign, FiUsers, FiCheckCircle, FiHeart, FiTrendingUp } from 'react-icons/fi';
 
 // Allowed giving types - ONLY these will be displayed
@@ -78,36 +79,9 @@ const AnalyticsPage = () => {
           <p className="text-gray-600 mt-2">House of David - Full Church Statistics</p>
         </div>
 
-        {/* Summary Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <StatCard
-            icon={<FiUsers />}
-            title="Total Members"
-            value={members?.total || 0}
-            subtitle={`${members?.active || 0} active`}
-            color="purple"
-          />
-          <StatCard
-            icon={<FiDollarSign />}
-            title="Total Giving"
-            value={`KSH ${(giving?.totalAmount || 0).toLocaleString()}`}
-            subtitle={`${giving?.totalDonations || 0} donations`}
-            color="gold"
-          />
-          <StatCard
-            icon={<FiCheckCircle />}
-            title="Attendance Rate"
-            value={`${attendance?.organizationRate || 0}%`}
-            subtitle={`${attendance?.totalSessions || 0} sessions`}
-            color="green"
-          />
-          <StatCard
-            icon={<FiUsers />}
-            title="In-Gatherings"
-            value={inGathering?.total || 0}
-            subtitle="Visitors invited"
-            color="cyan"
-          />
+        {/* Organization Analytics Overview */}
+        <div className="mb-8">
+          <OrganizationAnalytics />
         </div>
 
         {/* Charts Grid */}
@@ -151,6 +125,30 @@ const AnalyticsPage = () => {
                   </BarChart>
                 </ResponsiveContainer>
               </ChartCard>
+
+              {/* Monthly Giving Trends */}
+              {giving?.monthlyTrends && giving.monthlyTrends.length > 0 && (
+                <ChartCard title="Monthly Giving Trends (Last 12 Months)">
+                  <ResponsiveContainer width="100%" height={300}>
+                    <LineChart data={giving.monthlyTrends}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="month" />
+                      <YAxis />
+                      <Tooltip
+                        formatter={(value) => `KSH ${value.toLocaleString()}`}
+                      />
+                      <Legend />
+                      <Line
+                        type="monotone"
+                        dataKey="total"
+                        stroke="#6B2C91"
+                        strokeWidth={2}
+                        name="Total Giving"
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </ChartCard>
+              )}
             </div>
           </Section>
 
@@ -193,6 +191,35 @@ const AnalyticsPage = () => {
                   </BarChart>
                 </ResponsiveContainer>
               </ChartCard>
+
+              {/* Member Growth Trends */}
+              {members?.growthTrends && members.growthTrends.length > 0 && (
+                <ChartCard title="Member Growth (Last 12 Months)">
+                  <ResponsiveContainer width="100%" height={300}>
+                    <LineChart data={members.growthTrends}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="month" />
+                      <YAxis />
+                      <Tooltip />
+                      <Legend />
+                      <Line
+                        type="monotone"
+                        dataKey="newMembers"
+                        stroke="#10B981"
+                        strokeWidth={2}
+                        name="New Members"
+                      />
+                      <Line
+                        type="monotone"
+                        dataKey="totalMembers"
+                        stroke="#6B2C91"
+                        strokeWidth={2}
+                        name="Total Members"
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </ChartCard>
+              )}
             </div>
           </Section>
 

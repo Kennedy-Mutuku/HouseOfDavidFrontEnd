@@ -19,7 +19,6 @@ const Layout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const navigation = [
-    { name: 'Dashboard', path: '/dashboard', icon: FiHome, roles: ['user', 'admin', 'superadmin'] },
     { name: 'Members', path: '/members', icon: FiUsers, roles: ['user', 'admin', 'superadmin'] },
     { name: 'Events', path: '/events', icon: FiCalendar, roles: ['user', 'admin', 'superadmin'] },
     { name: 'Donations', path: '/donations', icon: FiDollarSign, roles: ['user', 'admin', 'superadmin'] },
@@ -45,9 +44,9 @@ const Layout = () => {
         }`}
       >
         <div className="flex items-center justify-between h-16 px-6 bg-primary-800">
-          <Link to="/admin/dashboard" className="text-xl font-bold text-white hover:opacity-90 transition-opacity cursor-pointer">
+          <div className="text-xl font-bold text-white">
             House of David
-          </Link>
+          </div>
           <button
             onClick={() => setSidebarOpen(false)}
             className="lg:hidden text-white hover:text-gray-200"

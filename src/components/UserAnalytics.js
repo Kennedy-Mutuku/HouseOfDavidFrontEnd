@@ -14,6 +14,7 @@ const UserAnalytics = () => {
   const [stats, setStats] = useState({});
   const hasFetchedRef = useRef(false);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   // Color schemes
   const GIVING_COLORS = {
@@ -42,7 +43,13 @@ const UserAnalytics = () => {
       if (!forceRefresh) {
         hasFetchedRef.current = true;
       }
-      setLoading(true);
+
+      // Use different loading states based on whether this is initial load or refresh
+      if (forceRefresh) {
+        setIsRefreshing(true);
+      } else {
+        setLoading(true);
+      }
       setError(null);
 
       // Fetch all analytics data in parallel
@@ -106,7 +113,27 @@ const UserAnalytics = () => {
         totalNurturing: nurturingCount
       });
 
+      // Store in localStorage for faster initial load next time
+      try {
+        const cacheData = {
+          givingData: givingChartData,
+          attendanceData: attendanceChartData,
+          inGatheringData: comparisonData,
+          stats: {
+            totalGiving: givingStats.totalGiving || 0,
+            attendanceRate: attendanceStats.attendanceRate || 0,
+            totalInGathering: inGatheringCount,
+            totalNurturing: nurturingCount
+          },
+          timestamp: Date.now()
+        };
+        localStorage.setItem(`analytics_cache_${user?.id}`, JSON.stringify(cacheData));
+      } catch (e) {
+        // Ignore localStorage errors
+      }
+
       setLoading(false);
+      setIsRefreshing(false);
     } catch (error) {
       console.error('Error fetching analytics:', error);
 
@@ -117,14 +144,39 @@ const UserAnalytics = () => {
         setError('Unable to load analytics data.');
       }
       setLoading(false);
+      setIsRefreshing(false);
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, user]);
 
   useEffect(() => {
     if (isAuthenticated && !hasFetchedRef.current) {
+      // Load cached data immediately for instant display (stale-while-revalidate)
+      try {
+        const cachedData = localStorage.getItem(`analytics_cache_${user?.id}`);
+        if (cachedData) {
+          const parsed = JSON.parse(cachedData);
+          const cacheAge = Date.now() - parsed.timestamp;
+
+          // Use cache if less than 5 minutes old
+          if (cacheAge < 5 * 60 * 1000) {
+            setGivingData(parsed.givingData || []);
+            setAttendanceData(parsed.attendanceData || []);
+            setInGatheringData(parsed.inGatheringData || []);
+            setStats(parsed.stats || {});
+            setLoading(false);
+
+            // Fetch fresh data in background
+            setTimeout(() => fetchAnalytics(true), 100);
+            return;
+          }
+        }
+      } catch (e) {
+        // Ignore cache errors, proceed with normal fetch
+      }
+
       fetchAnalytics();
     }
-  }, [isAuthenticated, fetchAnalytics]);
+  }, [isAuthenticated, fetchAnalytics, user]);
 
   // Auto-refresh analytics every 30 seconds to catch new attendance/giving
   useEffect(() => {
@@ -187,14 +239,44 @@ const UserAnalytics = () => {
     return null;
   };
 
-  if (loading) {
-    return (
-      <div className="bg-white rounded-2xl p-8 border-2 border-purple-200 shadow-lg">
-        <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+  // Skeleton loading component
+  const SkeletonLoader = () => (
+    <div className="bg-gradient-to-br from-purple-50 to-gold-50 rounded-2xl p-6 border-2 border-gold-500 shadow-lg animate-pulse">
+      <div className="mb-6 flex flex-col items-center">
+        <div className="text-center mb-4">
+          <div className="h-9 bg-purple-200 rounded w-64 mx-auto mb-2"></div>
+          <div className="h-4 bg-gray-200 rounded w-80 mx-auto"></div>
         </div>
       </div>
-    );
+
+      {/* Summary Stats Cards Skeleton */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        {[1, 2, 3, 4].map((i) => (
+          <div key={i} className="bg-white rounded-lg p-4 shadow-md border-l-4 border-gray-300">
+            <div className="text-center">
+              <div className="h-4 bg-gray-200 rounded w-24 mx-auto mb-2"></div>
+              <div className="h-8 bg-gray-300 rounded w-32 mx-auto"></div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Charts Skeleton */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="bg-white rounded-xl p-5 shadow-md border border-gray-200">
+            <div className="h-6 bg-gray-200 rounded w-40 mb-3"></div>
+            <div className="flex items-center justify-center h-64">
+              <div className="w-48 h-48 bg-gray-200 rounded-full"></div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+
+  if (loading) {
+    return <SkeletonLoader />;
   }
 
   if (error) {
@@ -220,64 +302,51 @@ const UserAnalytics = () => {
 
   return (
     <div className="bg-gradient-to-br from-purple-50 to-gold-50 rounded-2xl p-6 border-2 border-gold-500 shadow-lg">
-      <div className="mb-6 flex items-start justify-between">
-        <div>
-          <h2 className="text-2xl font-bold text-purple-600 flex items-center gap-2">
-            <FiDollarSign className="w-6 h-6" />
+      <div className="mb-6 flex flex-col items-center">
+        <div className="text-center mb-4">
+          <h2 className="text-3xl font-bold text-purple-600">
             My Analytics Overview
           </h2>
-          <p className="text-gray-600 mt-1">Track your giving, attendance, and in-gathering activities</p>
+          <p className="text-gray-600 mt-2">Track your giving, attendance, and in-gathering activities</p>
         </div>
         <button
           onClick={handleManualRefresh}
-          disabled={loading}
+          disabled={isRefreshing}
           className="flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           title="Refresh analytics"
         >
-          <FiRefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-          <span className="text-sm font-medium">Refresh</span>
+          <FiRefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+          <span className="text-sm font-medium">{isRefreshing ? 'Refreshing...' : 'Refresh'}</span>
         </button>
       </div>
 
       {/* Summary Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <div className="bg-white rounded-lg p-4 shadow-md border-l-4 border-purple-500">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600 font-medium">Total Giving</p>
-              <p className="text-2xl font-bold text-purple-600">KSH {stats.totalGiving?.toLocaleString()}</p>
-            </div>
-            <FiDollarSign className="w-10 h-10 text-purple-300" />
+          <div className="text-center">
+            <p className="text-sm text-gray-600 font-medium">Total Giving</p>
+            <p className="text-2xl font-bold text-purple-600">KSH {stats.totalGiving?.toLocaleString()}</p>
           </div>
         </div>
 
         <div className="bg-white rounded-lg p-4 shadow-md border-l-4 border-green-500">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600 font-medium">Attendance Rate</p>
-              <p className="text-2xl font-bold text-green-600">{stats.attendanceRate}%</p>
-            </div>
-            <FiCheckCircle className="w-10 h-10 text-green-300" />
+          <div className="text-center">
+            <p className="text-sm text-gray-600 font-medium">Attendance Rate</p>
+            <p className="text-2xl font-bold text-green-600">{stats.attendanceRate}%</p>
           </div>
         </div>
 
         <div className="bg-white rounded-lg p-4 shadow-md border-l-4 border-cyan-500">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600 font-medium">In-Gatherings</p>
-              <p className="text-2xl font-bold text-cyan-600">{stats.totalInGathering}</p>
-            </div>
-            <FiUsers className="w-10 h-10 text-cyan-300" />
+          <div className="text-center">
+            <p className="text-sm text-gray-600 font-medium">In-Gatherings</p>
+            <p className="text-2xl font-bold text-cyan-600">{stats.totalInGathering}</p>
           </div>
         </div>
 
         <div className="bg-white rounded-lg p-4 shadow-md border-l-4 border-orange-500">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600 font-medium">Nurturing</p>
-              <p className="text-2xl font-bold text-orange-600">{stats.totalNurturing}</p>
-            </div>
-            <FiUsers className="w-10 h-10 text-orange-300" />
+          <div className="text-center">
+            <p className="text-sm text-gray-600 font-medium">Nurturing</p>
+            <p className="text-2xl font-bold text-orange-600">{stats.totalNurturing}</p>
           </div>
         </div>
       </div>

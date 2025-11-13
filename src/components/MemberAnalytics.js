@@ -37,17 +37,39 @@ const MemberAnalytics = ({ memberId }) => {
       setError(null);
       fetchedMemberIdRef.current = memberIdToFetch;
 
-      // Fetch all analytics data for the specific member
-      const [givingRes, attendanceRes, inGatheringRes] = await Promise.all([
-        axios.get(`/donations/member/${memberIdToFetch}`),
-        axios.get(`/attendance-sessions/member/${memberIdToFetch}/stats`),
-        axios.get(`/ingathering/member/${memberIdToFetch}/analytics`)
+      console.log('[MemberAnalytics] Fetching analytics for member:', memberIdToFetch);
+
+      // Fetch all analytics data for the specific member with graceful error handling
+      // Use the SAME endpoints that UserAnalytics uses, but with member-specific routes
+      const [givingRes, attendanceRes, inGatheringRes] = await Promise.allSettled([
+        // Use the member-specific giving endpoint that returns the same format as my-giving
+        axios.get(`/donations/member/${memberIdToFetch}`).catch(err => {
+          console.error('[MemberAnalytics] Giving API error:', err.response?.data || err.message);
+          return { data: { data: { stats: { totalTithe: 0, totalOffering: 0, totalExtraGivings: 0, totalGiving: 0 }, history: [] } } };
+        }),
+        axios.get(`/attendance-sessions/member/${memberIdToFetch}/stats`).catch(err => {
+          console.error('[MemberAnalytics] Attendance API error:', err.response?.data || err.message);
+          return { data: { data: { attended: 0, missed: 0, attendanceRate: 0 } } };
+        }),
+        axios.get(`/ingathering/member/${memberIdToFetch}/analytics`).catch(err => {
+          console.error('[MemberAnalytics] In-gathering API error:', err.response?.data || err.message);
+          return { data: { data: { monthlyData: [], totalCount: 0 } } };
+        })
       ]);
 
-      // Process giving data - ONLY show Tithe, Offering, Extra Givings
-      const givingStats = givingRes.data.data.stats;
+      // Extract responses from settled promises
+      const givingResponse = givingRes.status === 'fulfilled' ? givingRes.value : givingRes.reason?.data || { data: { data: { stats: { totalTithe: 0, totalOffering: 0, totalExtraGivings: 0 } } } };
+      const attendanceResponse = attendanceRes.status === 'fulfilled' ? attendanceRes.value : attendanceRes.reason?.data || { data: { data: { attended: 0, missed: 0 } } };
+      const inGatheringResponse = inGatheringRes.status === 'fulfilled' ? inGatheringRes.value : inGatheringRes.reason?.data || { data: { data: { monthlyData: [] } } };
+
+      // Process giving data - EXACTLY like UserAnalytics does it
+      const givingStats = givingResponse.data?.data?.stats || { totalTithe: 0, totalOffering: 0, totalExtraGivings: 0, totalGiving: 0 };
+      console.log('[MemberAnalytics] Giving stats:', givingStats);
+
+      // Build chart data exactly like UserAnalytics - ONLY show types with values > 0
       const givingChartData = [];
 
+      // Add each giving type if it has a value, using the EXACT SAME logic as UserAnalytics
       if (givingStats.totalTithe > 0) {
         givingChartData.push({ name: 'Tithe', value: givingStats.totalTithe });
       }
@@ -59,9 +81,12 @@ const MemberAnalytics = ({ memberId }) => {
       }
 
       setGivingData(givingChartData);
+      console.log('[MemberAnalytics] Giving chart data (matching UserAnalytics):', givingChartData);
 
       // Process attendance data
-      const attendanceStats = attendanceRes.data.data;
+      const attendanceStats = attendanceResponse.data?.data || { attended: 0, missed: 0 };
+      console.log('[MemberAnalytics] Attendance stats:', attendanceStats);
+
       const attendanceChartData = [];
 
       if (attendanceStats.attended > 0 || attendanceStats.missed > 0) {
@@ -74,25 +99,30 @@ const MemberAnalytics = ({ memberId }) => {
       }
 
       setAttendanceData(attendanceChartData);
+      console.log('[MemberAnalytics] Attendance chart data:', attendanceChartData);
 
       // Process in-gathering data - limit to last 6 months
-      const inGatheringMonthly = inGatheringRes.data.data.monthlyData || [];
+      const inGatheringMonthly = inGatheringResponse.data?.data?.monthlyData || [];
       const last6Months = inGatheringMonthly.slice(-6);
 
       setInGatheringData(last6Months.map(item => ({
         name: item.month,
         value: item.count
       })));
+      console.log('[MemberAnalytics] In-gathering chart data:', last6Months);
 
       setLoading(false);
     } catch (error) {
-      console.error('Error fetching member analytics:', error);
+      console.error('[MemberAnalytics] Unexpected error:', error);
 
-      // Stop infinite retries on 401 errors
+      // Only show errors for authentication issues, not data issues
       if (error.response?.status === 401) {
         setError('Authentication required to view analytics');
       } else {
-        setError('Failed to load analytics data');
+        // Don't show error, just show empty charts with "No data"
+        setGivingData([]);
+        setAttendanceData([]);
+        setInGatheringData([]);
       }
 
       setLoading(false);
@@ -103,6 +133,17 @@ const MemberAnalytics = ({ memberId }) => {
     if (memberId && memberId !== fetchedMemberIdRef.current) {
       fetchMemberAnalytics(memberId);
     }
+
+    // Reset when memberId changes or becomes null
+    return () => {
+      if (!memberId) {
+        fetchedMemberIdRef.current = null;
+        setGivingData([]);
+        setAttendanceData([]);
+        setInGatheringData([]);
+        setError(null);
+      }
+    };
   }, [memberId, fetchMemberAnalytics]);
 
   const renderCustomLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent }) => {
@@ -222,8 +263,9 @@ const MemberAnalytics = ({ memberId }) => {
               </PieChart>
             </ResponsiveContainer>
           ) : (
-            <div className="flex items-center justify-center h-52 text-gray-400">
-              <p className="text-xs">No data</p>
+            <div className="flex flex-col items-center justify-center h-52 text-gray-400">
+              <FiDollarSign className="w-12 h-12 mb-2 opacity-50" />
+              <p className="text-xs">No giving records</p>
             </div>
           )}
         </div>

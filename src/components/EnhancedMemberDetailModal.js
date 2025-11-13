@@ -11,72 +11,172 @@ const EnhancedMemberDetailModal = ({ isOpen, onClose, member }) => {
     attendance: { records: [], stats: { total: 0, rate: 0 } },
     loading: true
   });
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   useEffect(() => {
     if (isOpen && member) {
-      fetchMemberActivity();
+      // Load cached data immediately for instant display (stale-while-revalidate)
+      try {
+        const cachedData = localStorage.getItem(`member_activity_${member._id}`);
+        if (cachedData) {
+          const parsed = JSON.parse(cachedData);
+          const cacheAge = Date.now() - parsed.timestamp;
+
+          // Use cache if less than 5 minutes old
+          if (cacheAge < 5 * 60 * 1000) {
+            setActivityData({
+              ...parsed.data,
+              loading: false
+            });
+
+            // Fetch fresh data in background
+            setTimeout(() => fetchMemberActivity(true), 100);
+            return;
+          }
+        }
+      } catch (e) {
+        // Ignore cache errors, proceed with normal fetch
+      }
+
+      fetchMemberActivity(false);
     }
   }, [isOpen, member]);
 
-  const fetchMemberActivity = async () => {
+  const fetchMemberActivity = async (isBackgroundRefresh = false) => {
     if (!member) return;
 
     try {
-      setActivityData(prev => ({ ...prev, loading: true }));
+      // If it's a background refresh, only set refreshing state, not loading
+      if (isBackgroundRefresh) {
+        setIsRefreshing(true);
+      } else {
+        setActivityData(prev => ({ ...prev, loading: true }));
+      }
+
+      console.log('[MemberDetail] Fetching data for member:', member._id, member.email);
 
       // Fetch all activity data in parallel
       const [givingsRes, inGatheringsRes, nurturingRes, attendanceRes] = await Promise.allSettled([
-        axios.get(`/donations/member/${member._id}`).catch(() => ({ data: { data: [] } })),
-        axios.get(`/ingathering/member/${member._id}`).catch(() => ({ data: { data: [] } })),
-        axios.get(`/nurturing/member/${member._id}`).catch(() => ({ data: { data: [] } })),
-        axios.get(`/attendance/member/${member._id}`).catch(() => ({ data: { data: [] } }))
+        axios.get(`/donations/member/${member._id}`),
+        axios.get(`/ingathering/member/${member._id}`),
+        axios.get(`/nurturing/member/${member._id}`),
+        axios.get(`/attendance-sessions/member/${member._id}/stats`)
       ]);
 
-      // Process givings data
-      const givingsResponse = givingsRes.status === 'fulfilled' ? givingsRes.value.data : {};
-      const givingsData = givingsResponse.data?.history || givingsResponse.data || [];
+      // Process givings data - use the SAME structure as the backend returns
+      const givingsResponse = givingsRes.status === 'fulfilled' && givingsRes.value ? givingsRes.value.data : { data: { stats: {}, history: [] } };
+      const givingsData = givingsResponse.data?.history || [];
       const backendStats = givingsResponse.data?.stats || {};
 
       console.log('[MemberDetail] Givings response:', givingsResponse);
-      console.log('[MemberDetail] Givings data:', givingsData);
-      console.log('[MemberDetail] Backend stats:', backendStats);
+      console.log('[MemberDetail] Backend stats received:', backendStats);
+      console.log('[MemberDetail] Raw givingsRes:', givingsRes);
 
-      // Use backend stats if available, otherwise calculate
+      // Use backend stats directly - they already have the correct totals
+      // Also fallback to calculating from history if stats are not available
+      const calculatedTotal = givingsData
+        .filter(d => d.status === 'Completed')
+        .reduce((sum, d) => sum + (d.amount || 0), 0);
+
+      const calculatedOffering = givingsData
+        .filter(d => d.status === 'Completed' && d.donationType === 'Offering')
+        .reduce((sum, d) => sum + (d.amount || 0), 0);
+
+      const calculatedTithe = givingsData
+        .filter(d => d.status === 'Completed' && d.donationType === 'Tithe')
+        .reduce((sum, d) => sum + (d.amount || 0), 0);
+
+      const calculatedExtraGivings = givingsData
+        .filter(d => d.status === 'Completed' && d.donationType === 'Extra Givings')
+        .reduce((sum, d) => sum + (d.amount || 0), 0);
+
       const givingStats = {
-        total: backendStats.total || givingsData.reduce((sum, g) => sum + (g.amount || 0), 0),
-        offering: backendStats.totalOffering || givingsData.filter(g => g.donationType === 'Offering').reduce((sum, g) => sum + (g.amount || 0), 0),
-        tithe: backendStats.totalTithe || givingsData.filter(g => g.donationType === 'Tithe').reduce((sum, g) => sum + (g.amount || 0), 0),
-        extraGivings: backendStats.totalExtraGivings || givingsData.filter(g => g.donationType === 'Extra Givings').reduce((sum, g) => sum + (g.amount || 0), 0)
+        total: backendStats.total || backendStats.totalGiving || calculatedTotal,
+        offering: backendStats.totalOffering || calculatedOffering,
+        tithe: backendStats.totalTithe || calculatedTithe,
+        extraGivings: backendStats.totalExtraGivings || calculatedExtraGivings
       };
 
+      console.log('[MemberDetail] Calculated stats from history:', {
+        calculatedTotal,
+        calculatedOffering,
+        calculatedTithe,
+        calculatedExtraGivings,
+        recordCount: givingsData.length
+      });
+      console.log('[MemberDetail] Final giving stats (using backend or calculated):', givingStats);
+
       // Process in-gatherings data
-      const inGatheringsData = inGatheringsRes.status === 'fulfilled' ? inGatheringsRes.value.data.data || [] : [];
+      const inGatheringsResponse = inGatheringsRes.status === 'fulfilled' && inGatheringsRes.value ? inGatheringsRes.value.data : { data: { history: [], total: 0 } };
+
+      // Handle both formats: array or {history, total} object
+      let inGatheringsData = [];
+      let inGatheringsTotal = 0;
+
+      if (Array.isArray(inGatheringsResponse.data)) {
+        inGatheringsData = inGatheringsResponse.data;
+        inGatheringsTotal = inGatheringsData.length;
+      } else if (inGatheringsResponse.data && typeof inGatheringsResponse.data === 'object') {
+        inGatheringsData = inGatheringsResponse.data.history || [];
+        inGatheringsTotal = inGatheringsResponse.data.total || inGatheringsData.length;
+      }
+
+      console.log('[MemberDetail] In-gatherings response:', inGatheringsResponse);
+      console.log('[MemberDetail] In-gatherings data:', inGatheringsData);
+      console.log('[MemberDetail] In-gatherings total:', inGatheringsTotal);
 
       // Process nurturing data
-      const nurturingData = nurturingRes.status === 'fulfilled' ? nurturingRes.value.data.data || [] : [];
+      const nurturingResponse = nurturingRes.status === 'fulfilled' && nurturingRes.value ? nurturingRes.value.data : { data: [] };
+      const nurturingData = Array.isArray(nurturingResponse.data) ? nurturingResponse.data : [];
 
-      // Process attendance data
-      const attendanceData = attendanceRes.status === 'fulfilled' ? attendanceRes.value.data.data || [] : [];
-      const attendanceRate = attendanceData.length > 0 ? (attendanceData.length / 52 * 100).toFixed(1) : 0; // Assuming 52 weeks
+      console.log('[MemberDetail] Nurturing response:', nurturingResponse);
+      console.log('[MemberDetail] Nurturing data:', nurturingData);
 
-      setActivityData({
-        givings: { records: givingsData, stats: givingStats, count: givingsData.length }, // Show all
-        inGatherings: { records: inGatheringsData.slice(0, 5), count: inGatheringsData.length },
+      // Process attendance data - use the stats endpoint response
+      const attendanceResponse = attendanceRes.status === 'fulfilled' ? attendanceRes.value.data : { data: { attended: 0, missed: 0, attendanceRate: 0 } };
+      const attendanceStatsData = attendanceResponse.data || { attended: 0, missed: 0, attendanceRate: 0 };
+
+      console.log('[MemberDetail] Attendance stats:', attendanceStatsData);
+
+      const finalActivityData = {
+        givings: { records: givingsData, stats: givingStats, count: givingsData.length },
+        inGatherings: { records: inGatheringsData.slice(0, 5), count: inGatheringsTotal },
         nurturing: { records: nurturingData.slice(0, 5), count: nurturingData.length },
-        attendance: { records: attendanceData.slice(0, 5), stats: { total: attendanceData.length, rate: attendanceRate } },
+        attendance: {
+          records: [],
+          stats: {
+            total: (attendanceStatsData.attended || 0) + (attendanceStatsData.missed || 0),
+            rate: attendanceStatsData.attendanceRate || 0
+          }
+        },
         loading: false
-      });
+      };
+
+      setActivityData(finalActivityData);
+
+      // Cache the data for faster subsequent loads
+      try {
+        const cacheData = {
+          data: finalActivityData,
+          timestamp: Date.now()
+        };
+        localStorage.setItem(`member_activity_${member._id}`, JSON.stringify(cacheData));
+      } catch (e) {
+        // Ignore localStorage errors
+      }
 
       console.log('[MemberDetail] Final activity data:', {
         givingsCount: givingsData.length,
         givingStats,
         inGatheringsCount: inGatheringsData.length,
         nurturingCount: nurturingData.length,
-        attendanceCount: attendanceData.length
+        attendanceRate: attendanceStatsData.attendanceRate
       });
     } catch (error) {
       console.error('Error fetching member activity:', error);
       setActivityData(prev => ({ ...prev, loading: false }));
+    } finally {
+      setIsRefreshing(false);
     }
   };
 
@@ -95,6 +195,54 @@ const EnhancedMemberDetailModal = ({ isOpen, onClose, member }) => {
   const formatCurrency = (amount) => {
     return `KSH ${amount.toLocaleString('en-KE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   };
+
+  // Skeleton loader component
+  const SkeletonLoader = () => (
+    <div className="space-y-6 animate-pulse">
+      {/* Personal Info Skeleton */}
+      <div className="bg-gray-100 rounded-xl p-6 border-2 border-gray-200">
+        <div className="h-6 bg-gray-300 rounded w-48 mb-4"></div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {[...Array(6)].map((_, i) => (
+            <div key={i} className="bg-white rounded-lg p-3">
+              <div className="h-3 bg-gray-200 rounded w-20 mb-2"></div>
+              <div className="h-4 bg-gray-300 rounded w-32"></div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Membership Info Skeleton */}
+      <div className="bg-gray-100 rounded-xl p-6 border-2 border-gray-200">
+        <div className="h-6 bg-gray-300 rounded w-56 mb-4"></div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {[...Array(6)].map((_, i) => (
+            <div key={i} className="bg-white rounded-lg p-3">
+              <div className="h-3 bg-gray-200 rounded w-24 mb-2"></div>
+              <div className="h-4 bg-gray-300 rounded w-28"></div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Activity Cards Skeleton */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        {[...Array(4)].map((_, i) => (
+          <div key={i} className="bg-gray-200 rounded-xl p-4 h-32"></div>
+        ))}
+      </div>
+
+      {/* Analytics Skeleton */}
+      <div className="bg-gray-100 rounded-xl p-5 border border-gray-300">
+        <div className="h-6 bg-gray-300 rounded w-40 mb-4"></div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {[...Array(3)].map((_, i) => (
+            <div key={i} className="bg-white rounded-lg p-4 h-64"></div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
 
   if (!isOpen || !member) return null;
 
@@ -123,9 +271,12 @@ const EnhancedMemberDetailModal = ({ isOpen, onClose, member }) => {
 
         {/* Content */}
         <div className="p-6 overflow-y-auto max-h-[calc(90vh-80px)]">
-          <div className="space-y-6">
-            {/* Personal Information Section */}
-            <div className="bg-gradient-to-br from-teal-50 to-cyan-50 rounded-xl p-6 border-2 border-teal-200">
+          {activityData.loading ? (
+            <SkeletonLoader />
+          ) : (
+            <div className="space-y-6">
+              {/* Personal Information Section */}
+              <div className="bg-gradient-to-br from-teal-50 to-cyan-50 rounded-xl p-6 border-2 border-teal-200">
               <h3 className="text-xl font-bold text-teal-800 mb-4 flex items-center">
                 <FiUser className="w-5 h-5 mr-2" />
                 Personal Information
@@ -156,52 +307,44 @@ const EnhancedMemberDetailModal = ({ isOpen, onClose, member }) => {
               </div>
             </div>
 
-            {/* Activity Summary Cards */}
+            {/* Activity Summary Cards - Matching User View */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               {/* Total Givings */}
               <div className="bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl p-4 text-white shadow-lg">
-                <div className="flex items-center justify-between">
-                  <FiDollarSign className="w-8 h-8 opacity-80" />
-                  <div className="text-right">
-                    <p className="text-sm opacity-90">Total Givings</p>
-                    <p className="text-2xl font-bold">{formatCurrency(activityData.givings.stats.total)}</p>
-                  </div>
+                <div className="flex flex-col items-center justify-center text-center h-full">
+                  <FiDollarSign className="w-10 h-10 mb-2 opacity-80" />
+                  <p className="text-sm opacity-90 mb-1">Total Givings</p>
+                  <p className="text-2xl font-bold">KSH {activityData.givings.stats.total.toLocaleString()}</p>
                 </div>
               </div>
 
               {/* In-Gatherings */}
               <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-4 text-white shadow-lg">
-                <div className="flex items-center justify-between">
-                  <FiUsers className="w-8 h-8 opacity-80" />
-                  <div className="text-right">
-                    <p className="text-sm opacity-90">In-Gatherings</p>
-                    <p className="text-2xl font-bold">{activityData.inGatherings.count}</p>
-                    <p className="text-xs opacity-75">Visitors Invited</p>
-                  </div>
+                <div className="flex flex-col items-center justify-center text-center h-full">
+                  <FiUsers className="w-10 h-10 mb-2 opacity-80" />
+                  <p className="text-sm opacity-90 mb-1">In-Gatherings</p>
+                  <p className="text-2xl font-bold">{activityData.inGatherings.count}</p>
+                  <p className="text-xs opacity-75 mt-1">Visitors Invited</p>
                 </div>
               </div>
 
               {/* Nurturing */}
               <div className="bg-gradient-to-br from-orange-500 to-red-500 rounded-xl p-4 text-white shadow-lg">
-                <div className="flex items-center justify-between">
-                  <FiHeart className="w-8 h-8 opacity-80" />
-                  <div className="text-right">
-                    <p className="text-sm opacity-90">Nurturing</p>
-                    <p className="text-2xl font-bold">{activityData.nurturing.count}</p>
-                    <p className="text-xs opacity-75">People Nurtured</p>
-                  </div>
+                <div className="flex flex-col items-center justify-center text-center h-full">
+                  <FiHeart className="w-10 h-10 mb-2 opacity-80" />
+                  <p className="text-sm opacity-90 mb-1">Nurturing</p>
+                  <p className="text-2xl font-bold">{activityData.nurturing.count}</p>
+                  <p className="text-xs opacity-75 mt-1">People Nurtured</p>
                 </div>
               </div>
 
               {/* Attendance */}
               <div className="bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl p-4 text-white shadow-lg">
-                <div className="flex items-center justify-between">
-                  <FiCheckCircle className="w-8 h-8 opacity-80" />
-                  <div className="text-right">
-                    <p className="text-sm opacity-90">Attendance Rate</p>
-                    <p className="text-2xl font-bold">{activityData.attendance.stats.rate}%</p>
-                    <p className="text-xs opacity-75">{activityData.attendance.stats.total} Services</p>
-                  </div>
+                <div className="flex flex-col items-center justify-center text-center h-full">
+                  <FiCheckCircle className="w-10 h-10 mb-2 opacity-80" />
+                  <p className="text-sm opacity-90 mb-1">Attendance Rate</p>
+                  <p className="text-2xl font-bold">{activityData.attendance.stats.rate}%</p>
+                  <p className="text-xs opacity-75 mt-1">{activityData.attendance.stats.total} Services</p>
                 </div>
               </div>
             </div>
@@ -214,13 +357,8 @@ const EnhancedMemberDetailModal = ({ isOpen, onClose, member }) => {
             )}
 
             {/* Detailed Activity Sections */}
-            {activityData.loading ? (
-              <div className="text-center py-8">
-                <p className="text-gray-600">Loading activity data...</p>
-              </div>
-            ) : (
-              <>
-                {/* Givings Detail */}
+            <>
+              {/* Givings Detail */}
                 {activityData.givings.records.length > 0 && (
                   <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-6 border-2 border-green-200">
                     <h3 className="text-xl font-bold text-green-800 mb-4 flex items-center justify-between">
@@ -344,8 +482,8 @@ const EnhancedMemberDetailModal = ({ isOpen, onClose, member }) => {
                   </div>
                 )}
               </>
-            )}
-          </div>
+            </div>
+          )}
         </div>
 
         {/* Footer */}

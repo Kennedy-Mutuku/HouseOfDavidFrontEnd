@@ -69,14 +69,14 @@ const FinancialManagement = () => {
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Page Header */}
-        <div className="mb-6 flex justify-between items-center">
+        <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-gray-800">Financial Management</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">Financial Management</h1>
             <p className="text-purple-600 text-sm mt-1">House of David - Financial Operations</p>
           </div>
           <Link
             to="/superadmin/dashboard"
-            className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-all"
+            className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-all whitespace-nowrap"
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
               <path fillRule="evenodd" d="M9.707 14.707a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 1.414L7.414 9H15a1 1 0 110 2H7.414l2.293 2.293a1 1 0 010 1.414z" clipRule="evenodd" />
@@ -90,19 +90,19 @@ const FinancialManagement = () => {
 
         {/* Tab Navigation */}
         <div className="bg-white rounded-xl shadow-md mb-6 overflow-hidden">
-          <div className="flex border-b border-gray-200 overflow-x-auto">
+          <div className="grid grid-cols-2 lg:flex border-b border-gray-200">
             {tabs.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-2 px-6 py-4 font-semibold whitespace-nowrap transition-all ${
+                className={`flex flex-col lg:flex-row items-center justify-center gap-1 lg:gap-2 px-3 py-3 lg:px-6 lg:py-4 font-semibold text-sm lg:text-base transition-all ${
                   activeTab === tab.id
                     ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white border-b-4 border-purple-800'
                     : 'text-gray-700 hover:bg-gray-50'
                 }`}
               >
-                <span className="text-xl">{tab.icon}</span>
-                <span>{tab.label}</span>
+                <span className="text-xl lg:text-2xl">{tab.icon}</span>
+                <span className="text-center text-xs lg:text-base leading-tight">{tab.label}</span>
               </button>
             ))}
           </div>
